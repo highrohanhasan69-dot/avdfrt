@@ -129,7 +129,12 @@ onMounted(fetchFooterData);
   background-color: #0b1a28;
   color: #c0c0c0;
   padding: 40px 80px;
-  font-family: sans-serif;
+  font-family: "Zalando Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
 }
 
 .footer-top {

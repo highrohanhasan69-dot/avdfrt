@@ -30,7 +30,7 @@ const fetchHotDeals = async () => {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .eq("is_hot_deal", true); // শুধু hot deals filter
+    .eq("is_hot_deal", true);
   if (!error) hotDeals.value = data;
 };
 
@@ -43,7 +43,7 @@ onMounted(() => fetchHotDeals());
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  margin-top: 30px;
+  margin-top: 70px;
 }
 
 .page-title {
@@ -65,15 +65,20 @@ onMounted(() => fetchHotDeals());
   }
 }
 
+/* ✅ Mobile - Always 2 per row */
 @media (max-width: 768px) {
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .products-page{
+    margin-top: 0;
+  }
 }
 
+/* Very small screens - keep 2 per row */
 @media (max-width: 480px) {
   .products-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

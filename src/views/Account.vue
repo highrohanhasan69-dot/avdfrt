@@ -1,4 +1,6 @@
-<template>
+<template><head><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet"></head>
   <div class="account-page">
     <h1>My Account</h1>
 
@@ -48,6 +50,8 @@ onMounted(() => {
 
 <style scoped>
 .account-page {
+  font-family: "Zalando Sans";
+
   max-width: 500px;
   margin: 50px auto;
   padding: 20px;

@@ -88,35 +88,63 @@ export const useCartStore = defineStore("cart", {
     },
 
     // Save cart to DB or localStorage
-  async saveCart() {
-  if (this.isGuest) {
-    localStorage.setItem(
-      LOCAL_KEY,
-      JSON.stringify({ items: this.items, orders: this.orders })
-    );
-  } else if (this.userId) {
-    try {
-      const { error } = await supabase
-        .from("cart")
-        .upsert(
-          { user_id: this.userId, items: this.items, orders: this.orders },
-          { onConflict: "user_id" } // ⚡ Important: conflict resolve
+    async saveCart() {
+      if (this.isGuest) {
+        localStorage.setItem(
+          LOCAL_KEY,
+          JSON.stringify({ items: this.items, orders: this.orders })
         );
-      if (error) console.error("Error saving cart:", error.message);
-    } catch (err) {
-      console.error("Cart save failed:", err);
-    }
-  }
-}
-,
+      } else if (this.userId) {
+        try {
+          const { error } = await supabase
+            .from("cart")
+            .upsert(
+              { user_id: this.userId, items: this.items, orders: this.orders },
+              { onConflict: "user_id" } // ⚡ Important: conflict resolve
+            );
+          if (error) console.error("Error saving cart:", error.message);
+        } catch (err) {
+          console.error("Cart save failed:", err);
+        }
+      }
+    },
+
+    // -------------------------
+    // 🛒 CART FUNCTIONS
+    // -------------------------
 
     addItem(product) {
-      this.items.push(product);
+      const existing = this.items.find(
+        (i) =>
+          i.id === product.id &&
+          JSON.stringify(i.selectedVariants) === JSON.stringify(product.selectedVariants)
+      );
+
+      if (existing) {
+        existing.quantity = (existing.quantity || 1) + (product.quantity || 1);
+      } else {
+        this.items.push({ ...product, quantity: product.quantity || 1 });
+      }
       this.saveCart();
     },
 
     removeItem(index) {
       this.items.splice(index, 1);
+      this.saveCart();
+    },
+
+    increaseQuantity(item) {
+      item.quantity++;
+      this.saveCart();
+    },
+
+    decreaseQuantity(item) {
+      if (item.quantity > 1) {
+        item.quantity--;
+      } else {
+        const index = this.items.indexOf(item);
+        if (index > -1) this.items.splice(index, 1);
+      }
       this.saveCart();
     },
 
@@ -134,7 +162,7 @@ export const useCartStore = defineStore("cart", {
         const order = {
           id: Date.now(),
           items: [...this.items],
-          total: this.items.reduce((sum, i) => sum + i.price, 0),
+          total: this.items.reduce((sum, i) => sum + i.price * i.quantity, 0),
           customer: customerInfo,
           date: new Date().toLocaleString(),
         };
@@ -150,8 +178,10 @@ export const useCartStore = defineStore("cart", {
   },
 
   getters: {
-    itemCount: (state) => state.items.length,
+    itemCount: (state) =>
+      state.items.reduce((sum, i) => sum + (i.quantity || 1), 0),
+
     totalPrice: (state) =>
-      state.items.reduce((sum, i) => sum + i.price, 0),
+      state.items.reduce((sum, i) => sum + i.price * (i.quantity || 1), 0),
   },
 });

@@ -1,20 +1,31 @@
 <template>
-  <div class="category-page">
-    <h1>{{ slug }} Products</h1>
+  <div>
+    <Navbar />
 
-    <div v-if="products.length">
-      <div v-for="product in products" :key="product.id" class="product-card">
-        <img :src="product.image_url" :alt="product.name" />
-        <p>{{ product.name }}</p>
+    <div class="home-wrapper category-page">
+      <h1 class="category-title">{{ slug }} Products</h1>
+
+      <div v-if="products.length" class="products-grid">
+        <ProductCard
+          v-for="product in products"
+          :key="product.id"
+          :product="product"
+        />
+      </div>
+
+      <div v-else>
+        <p>No products found in this category.</p>
       </div>
     </div>
-    <div v-else>
-      <p>No products found in this category.</p>
-    </div>
+
+    <Footer />
   </div>
 </template>
 
 <script setup>
+import Navbar from "../components/NavBar.vue";
+import Footer from "../components/Footer.vue";
+import ProductCard from "../components/ProductCard.vue";
 import { ref, onMounted } from "vue";
 import { supabase } from "../lib/supabase";
 
@@ -28,7 +39,7 @@ const fetchProducts = async () => {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .eq("category_slug", props.slug); // slug দিয়ে filter
+    .eq("category_slug", props.slug);
 
   if (error) console.error("Error loading products:", error.message);
   else products.value = data;
@@ -40,9 +51,59 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.home-wrapper {
+  margin: 0 10%;
+  padding: 20px 0;
+  box-sizing: border-box;
+   margin-top: 60px;
+}
+
+/* Category title */
+.category-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #4A00E0;
+  text-align: center;
+}
+
+/* Products grid: default (desktop) */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 per row on PC */
+  gap: 20px;
+}
+
+/* Responsive for tablets and mobile */
+@media (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr); /* tablet: 3 per row */
+  }
+}
+
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr); /* mobile: 2 per row */
+  }
+  .home-wrapper{
+margin: 0 5%;
+  }
+}
+
+/* fallback card if ProductCard fails */
 .product-card {
   border: 1px solid #ddd;
   padding: 10px;
-  margin: 10px;
+  text-align: center;
+}
+.product-card img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+.product-card p {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 500;
 }
 </style>

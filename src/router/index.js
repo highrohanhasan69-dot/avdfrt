@@ -12,8 +12,58 @@ import ProductPage from "../views/product.vue"; // Product.vue এর page
 import HotDeal from "../views/HotDeal.vue"; // Product.vue এর page
 import TopProducts from "../views/TopProducts.vue";
 import AllProducts from "../views/AllProducts.vue";
-
+import Categories from '../views/categories.vue'
+import SearchPage from '../views/SearchPage.vue'
 const routes = [
+  {
+  path: '/search',
+  name: 'SearchPage',
+  component: () => import('../views/SearchPage.vue'),
+}
+,
+
+
+  {
+  path: "/terms-conditions",
+  name: "TermsConditions",
+  component: () => import("@/views/terms-conditions.vue"),
+},
+{
+    path: '/categories',
+    name: 'Categories',
+    component: Categories,
+  },
+  {
+  path: "/about-us",
+  name: "AboutUs",
+  component: () => import("@/views/about-us.vue"),
+},
+  {
+  path: "/privacy-policy",
+  name: "PrivacyPolicy",
+  component: () => import("@/views/privacy-policy.vue"),
+}
+,
+  {
+  path: "/blog",
+  name: "Blog",
+  component: () => import("@/views/blog.vue"),
+},
+  {
+  path: "/comingsoon",
+  name: "ComingSoon",
+  component: () => import("@/views/comingsoon.vue"),
+},
+  {
+  path: "/return-refund-policy",
+  name: "ReturnRefundPolicy",
+  component: () => import("@/views/return-refund-policy.vue"),
+},
+  {
+  path: "/delivery-policy",
+  name: "DeliveryPolicy",
+  component: () => import("../views/delivery-policy.vue"),
+},
     {
     path: "/top-products",
     name: "TopProducts",

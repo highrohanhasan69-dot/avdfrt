@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Navbar />
+   <Navbar />
 
     <div class="home-content">
       <!-- Banner Slider -->
@@ -18,6 +18,7 @@
       <!-- Top Categories -->
       <div class="categories-section" v-if="categories.length">
         <h2 class="section-title">Top Categories</h2>
+
         <div class="categories-grid">
           <div
             v-for="category in categories"
@@ -34,11 +35,12 @@
             </router-link>
           </div>
         </div>
+           <span class="section-link" @click="router.push('/categories')">See All Categories</span>
       </div>
 
       <!-- Hot Deals Section -->
       <div class="products-section" v-if="hotDeals.length">
-        <h2 class="section-title">🔥 Hot Deals</h2>
+        <h2 class="section-title">Hot Deals</h2>
         <div class="products-grid">
           <ProductCard
             v-for="product in hotDeals"
@@ -46,12 +48,13 @@
             :product="product"
           />
         </div>
-        <p class="view-all" @click="router.push('/hot-deals')">View All Hot Deals</p>
+                <span class="section-link" @click="router.push('/hot-deal')">View All Hot Deals</span>
+
       </div>
 
       <!-- Top Products Section -->
       <div class="products-section" v-if="topProducts.length">
-        <h2 class="section-title">⭐ Top Products</h2>
+        <h2 class="section-title">Top Products</h2>
         <div class="products-grid">
           <ProductCard
             v-for="product in topProducts"
@@ -59,12 +62,13 @@
             :product="product"
           />
         </div>
-        <p class="view-all" @click="router.push('/top-products')">See All Top Products</p>
+                <span class="section-link" @click="router.push('/top-products')">See All Top Products</span>
+
       </div>
 
       <!-- All Products Section -->
       <div class="products-section" v-if="allProducts.length">
-        <h2 class="section-title">🛒 All Products</h2>
+        <h2 class="section-title">All Products</h2>
         <div class="products-grid">
           <ProductCard
             v-for="product in allProducts"
@@ -72,12 +76,24 @@
             :product="product"
           />
         </div>
-        <p class="view-all" @click="router.push('/all-products')">View All Products</p>
       </div>
+              <span class="section-link" @click="router.push('/all-products')">View All Products</span>
+
     </div>
 
     <Footer />
   </div>
+<head>
+    <meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>AVADO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
+  </head>
 </template>
 
 <script setup>
@@ -155,4 +171,6 @@ onMounted(() => fetchAllProducts());
 
 <style scoped>
 @import "../views/home.css";
+
+
 </style>
