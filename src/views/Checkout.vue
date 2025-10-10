@@ -79,7 +79,7 @@ import { useCartStore } from "@/components/cart.js";
 import { supabase } from "@/lib/supabase";
 
 // Components
-import Navbar from "@/components/Navbar.vue";
+import Navbar from "@/components/NavBar.vue";
 import Footer from "@/components/Footer.vue";
 
 const cartStore = useCartStore();
