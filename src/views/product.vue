@@ -113,7 +113,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter, useRoute } from 'vue-router';
 import { useCartStore } from '@/components/cart.js';
 import ProductCard from '@/components/ProductCard.vue';
-import Navbar from '@/components/Navbar.vue';
+import Navbar from "@/components/NavBar.vue";
 import Footer from '@/components/Footer.vue';
 
 const router = useRouter();

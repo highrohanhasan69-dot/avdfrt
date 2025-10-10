@@ -33,7 +33,7 @@ import { ref, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { supabase } from "@/lib/supabase";
 
-import Navbar from "@/components/Navbar.vue";
+import Navbar from "@/components/NavBar.vue";
 import Footer from "@/components/Footer.vue";
 import ProductCard from "@/components/ProductCard.vue";
 

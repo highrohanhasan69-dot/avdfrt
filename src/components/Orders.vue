@@ -98,7 +98,7 @@
 <script setup>
 import { ref, onMounted } from "vue"
 import { supabase } from "@/lib/supabase"
-import Navbar from "@/components/Navbar.vue"
+import Navbar from "@/components/NavBar.vue";
 import Footer from "@/components/Footer.vue"
 
 const orders = ref([])
