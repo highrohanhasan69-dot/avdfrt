@@ -1,14 +1,30 @@
 <template>
   <div>
+    <!-- 🟣 Navbar -->
     <Navbar />
+
+    <!-- 🟣 Top Products Section -->
     <h2 class="page-title">⭐ Top Products</h2>
-    <div class="products-grid">
+
+    <!-- Products Grid -->
+    <div v-if="topProducts.length" class="products-grid">
       <ProductCard
         v-for="product in topProducts"
         :key="product.id"
         :product="product"
       />
     </div>
+
+    <!-- Empty State -->
+    <div v-else class="empty">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+        alt="No Products"
+      />
+      <p>No top products available right now!</p>
+    </div>
+
+    <!-- 🟣 Footer -->
     <Footer />
   </div>
 </template>
@@ -18,17 +34,26 @@ import Navbar from "../components/NavBar.vue";
 import ProductCard from "../components/ProductCard.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
-import { supabase } from "../lib/supabase";
+import axios from "axios"; // ✅ Replaced supabase with axios (Node.js backend)
 
+// ✅ Reactive list for top products
 const topProducts = ref([]);
+
+// ✅ Fetch from Node.js backend
 const fetchTopProducts = async () => {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("is_top_product", true);
-  if (!error) topProducts.value = data;
+  try {
+    const res = await axios.get("http://localhost:5000/products");
+    const allProducts = res.data || [];
+
+    // ⭐ Filter only top products
+    topProducts.value = allProducts.filter(p => p.is_top_product === true);
+
+  } catch (err) {
+    console.error("❌ Failed to fetch top products:", err);
+  }
 };
-onMounted(() => fetchTopProducts());
+
+onMounted(fetchTopProducts);
 </script>
 
 <style scoped>
@@ -65,6 +90,18 @@ onMounted(() => fetchTopProducts());
   border-radius: 2px;
 }
 
+/* Empty state */
+.empty {
+  text-align: center;
+  margin-top: 60px;
+  color: #777;
+}
+.empty img {
+  width: 120px;
+  opacity: 0.8;
+  margin-bottom: 10px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .products-grid {
@@ -79,6 +116,7 @@ onMounted(() => fetchTopProducts());
   }
   .page-title {
     margin: 20px 5%;
+    font-size: 1.7rem;
   }
 }
 

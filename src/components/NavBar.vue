@@ -1,102 +1,100 @@
- <template>
-  <div>
+<template>
+  <div class="nav">
     <head>
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link
         href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap"
         rel="stylesheet"
-      >
+      />
     </head>
 
-    <!-- ✅ Top Navbar -->
-    <div :class="['navbarcontainer', { 'scrolled': isScrolled }]">
-      <!-- Logo -->
-
-      <div class="logo" @click="goHome" style="cursor:pointer">
-        <div class="logoimg">
-          <img src="@/assets/logo.png" alt="AVADO Logo" />
-        </div>
-        <div class="logoname">AVADO</div>
-      </div>
-
-      <!-- 🔍 Search Bar (Desktop only) -->
-      <div class="searchbar-container pc-only">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search products..."
-          @focus="showSuggestions = true"
-          @input="fetchSuggestions"
-          @keydown.enter="goToSearchPage"
-        />
-        <div class="search-icon" @click="goToSearchPage">
-          <i class="fas fa-search"></i>
+    <!-- 🔹 NAVBAR -->
+    <header :class="['navbar', { scrolled: isScrolled }]">
+      <div class="nav-inner">
+        <!-- ✅ Logo -->
+        <div class="logo" @click="goHome">
+          <img src="@/assets/logo.png" alt="AVADO" />
+          <h3>AVADO</h3>
         </div>
 
-        <!-- ✅ Dropdown Suggestion Box -->
-        <ul v-if="showSuggestions && suggestions.length" class="suggestions-box">
-          <li
-            v-for="(product, index) in suggestions"
-            :key="index"
-            @click="goToProduct(product.id)"
+        <!-- ✅ Search Box (Desktop Only) -->
+        <div class="search-box pc-only">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search products..."
+            @focus="showSuggestions = true"
+            @input="fetchSuggestions"
+            @keydown.enter="goToSearchPage"
+          />
+          <button class="search-btn" @click="goToSearchPage">🔍</button>
+
+          <ul
+            v-if="showSuggestions && suggestions.length"
+            class="suggestion-list"
           >
-            <img :src="product.image_url" alt="img" />
-            <span>{{ product.name }}</span>
-          </li>
-        </ul>
+            <li
+              v-for="(product, index) in suggestions"
+              :key="index"
+              @click="goToProduct(product.id)"
+            >
+              <img :src="product.image_url" />
+              <span>{{ product.name }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- ✅ Desktop Nav Icons -->
+        <nav class="pc-only">
+          <ul class="nav-items">
+            <li @click="goHotDeals">
+              <img :src="giftIcon" /><span>Offer</span>
+            </li>
+            <li @click="goOrders">
+              <img :src="bagIcon" /><span>Orders</span>
+            </li>
+
+            <li @click="toggleCart" class="cart-item">
+              <img :src="cartIcon" /><span>Cart</span>
+              <span
+                v-if="itemCount > 0"
+                :class="['cart-badge', { bounce: animateCart }]"
+                >{{ itemCount }}</span
+              >
+            </li>
+
+            <li @click="goAccount">
+              <img :src="userIcon" />
+              <span>{{
+                currentUser
+                  ? currentUser.email || currentUser.phone
+                  : "Account"
+              }}</span>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- ✅ Mobile Search Icon -->
+        <button class="mobile-search-btn mobile-only" @click="toggleMobileSearch">
+          🔍
+        </button>
       </div>
+    </header>
 
-      <!-- 🔥 Nav Links (PC only) -->
-      <ul class="nav-links pc-only">
-        <li @click="goHotDeals">
-          <img :src="giftIcon" alt="Gift Icon" class="icon" />
-          <span class="icon-text">Offer</span>
-        </li>
-
-        <li @click="goOrders">
-          <img :src="bagIcon" alt="Bag Icon" class="icon" />
-          <span class="icon-text">Order</span>
-        </li>
-
-        <li class="cart-li">
-          <div class="cart-wrapper" @click="toggleCart">
-            <img :src="cartIcon" alt="Cart Icon" class="icon" />
-            <span class="icon-text">Cart</span>
-            <span v-if="cartStore.itemCount > 0" class="cart-badge">
-              {{ cartStore.itemCount }}
-            </span>
-          </div>
-        </li>
-
-        <li @click="goAccount">
-          <img :src="userIcon" alt="User Icon" class="icon" />
-          <span class="icon-text">
-            {{ currentUser ? (currentUser.user_metadata?.name || currentUser.email) : 'Account' }}
-          </span>
-        </li>
-      </ul>
-
-      <!-- ✅ Mobile Search Icon -->
-      <div class="mobile-search-icon mobile-only" @click="toggleMobileSearch">
-        <i class="fas fa-search"></i>
-      </div>
-    </div>
-
-    <!-- ✅ Mobile Search Overlay -->
-    <div v-if="mobileSearchOpen" class="mobile-search-overlay">
-      <div class="mobile-search-box">
+    <!-- 🔍 Mobile Search Overlay -->
+    <div v-if="mobileSearchOpen" class="mobile-search">
+      <div class="search-input">
         <input
           v-model="searchQuery"
-          type="text"
           placeholder="Search products..."
           @input="fetchSuggestions"
           @keydown.enter="goToSearchPage"
         />
-        <i class="fas fa-times close-icon" @click="toggleMobileSearch"></i>
+        <i class="fas fa-times close" @click="toggleMobileSearch"></i>
       </div>
 
-      <ul v-if="suggestions.length" class="mobile-suggestions">
+      <ul v-if="suggestions.length" class="mobile-suggestion-list">
         <li
           v-for="(product, index) in suggestions"
           :key="index"
@@ -108,85 +106,91 @@
       </ul>
     </div>
 
-    <!-- ✅ Mobile Bottom Bar -->
-    <ul class="bottom-bar">
-       <li @click="goHome">
-        <img :src="homeIcon" alt="Offer" />
-        <span>Home</span>
-      </li>
-      <li @click="goHotDeals">
-        <img :src="giftIcon" alt="Offer" />
-        <span>Offer</span>
-      </li>
-      <li @click="goOrders">
-        <img :src="bagIcon" alt="Order" />
-        <span>Order</span>
-      </li>
-      <li @click="toggleCart">
-        <img :src="cartIcon" alt="Cart" />
-        <span>Cart</span>
-        <span v-if="cartStore.itemCount > 0" class="cart-badge-mobile">{{ cartStore.itemCount }}</span>
-      </li>
-      <li @click="goAccount">
-        <img :src="userIcon" alt="Account" />
-        <span>Account</span>
-      </li>
-    </ul>
+    <!-- 📱 Mobile Bottom Bar -->
+    <nav class="mobile-bottom-bar">
+      <ul>
+        <li @click="goHome">
+          <img :src="homeIcon" /><span>Home</span>
+        </li>
+        <li @click="goHotDeals">
+          <img :src="giftIcon" /><span>Offer</span>
+        </li>
+        <li @click="goOrders">
+          <img :src="bagIcon" /><span>Orders</span>
+        </li>
+        <li @click="toggleCart" class="cart-item">
+          <img :src="cartIcon" /><span>Cart</span>
+          <span
+            v-if="itemCount > 0"
+            :class="['cart-badge-mobile', { bounce: animateCart }]"
+            >{{ itemCount }}</span
+          >
+        </li>
+        <li @click="goAccount">
+          <img :src="userIcon" /><span>Account</span>
+        </li>
+      </ul>
+    </nav>
 
-    <!-- Cart Panel -->
-    <Cart :open="cartOpen" @close="toggleCart" />
-
+    <!-- 🛒 Cart Drawer -->
+    <CartDrawer v-if="cartOpen" @close="toggleCart" />
   </div>
 </template>
 
 <script setup>
-import homeIcon from '@/assets/icons/icons8-home-50.png'
-import giftIcon from '@/assets/icons/gift.svg'
-import bagIcon from '@/assets/icons/shopping-bag.svg'
-import cartIcon from '@/assets/icons/shopping-cart.svg'
-import userIcon from '@/assets/icons/circle-user-round.svg'
-import { supabase } from "@/lib/supabase";
-import { useRouter } from 'vue-router';
+import homeIcon from "@/assets/icons/icons8-home-50.png";
+import giftIcon from "@/assets/icons/gift.svg";
+import bagIcon from "@/assets/icons/shopping-bag.svg";
+import cartIcon from "@/assets/icons/shopping-cart.svg";
+import userIcon from "@/assets/icons/circle-user-round.svg";
+import CartDrawer from "../components/cart.vue";
+import { useRouter } from "vue-router";
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
-import Cart from "../components/cart.vue";
-import { useCartStore } from "@/components/cart.js";
+import { useCartStore } from "../stores/cart";
+import { storeToRefs } from "pinia";
+import axios from "axios";
 
-const cartStore = useCartStore();
 const router = useRouter();
+const cartStore = useCartStore();
+const { itemCount } = storeToRefs(cartStore);
 
 const currentUser = ref(null);
-const getUser = async () => {
-  const { data } = await supabase.auth.getUser();
-  currentUser.value = data.user;
-};
-onMounted(() => getUser());
-
 const cartOpen = ref(false);
-const toggleCart = () => cartOpen.value = !cartOpen.value;
-
-// Scroll detection
-const isScrolled = ref(false);
-const handleScroll = () => { isScrolled.value = window.scrollY > 30; };
-onMounted(() => window.addEventListener("scroll", handleScroll));
-onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
-
-// ✅ Search functionality
+const mobileSearchOpen = ref(false);
 const searchQuery = ref("");
 const suggestions = ref([]);
 const showSuggestions = ref(false);
-const mobileSearchOpen = ref(false);
+const isScrolled = ref(false);
+const animateCart = ref(false);
+
+const getUser = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/auth/current-user", {
+      withCredentials: true,
+    });
+    currentUser.value = res.data.user;
+  } catch {
+    currentUser.value = null;
+  }
+};
+onMounted(getUser);
 
 const fetchSuggestions = async () => {
-  if (searchQuery.value.trim().length === 0) {
+  const query = searchQuery.value.trim();
+  if (!query) {
     suggestions.value = [];
+    showSuggestions.value = false;
     return;
   }
-  const { data, error } = await supabase
-    .from('products')
-    .select('id, name, image_url')
-    .ilike('name', `%${searchQuery.value}%`)
-    .limit(5);
-  if (!error) suggestions.value = data;
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/products/search?q=${encodeURIComponent(query)}`
+    );
+    suggestions.value = res.data || [];
+    showSuggestions.value = true;
+  } catch (err) {
+    console.error("❌ Search failed:", err);
+  }
 };
 
 const goToProduct = (id) => {
@@ -196,287 +200,227 @@ const goToProduct = (id) => {
 };
 
 const goToSearchPage = () => {
-  if (searchQuery.value.trim().length > 0) {
-    router.push({ path: '/search', query: { q: searchQuery.value } });
-    showSuggestions.value = false;
-    mobileSearchOpen.value = false;
-  }
+  const query = searchQuery.value.trim();
+  if (!query) return;
+  router.push({ path: "/search", query: { q: query } });
+  showSuggestions.value = false;
+  mobileSearchOpen.value = false;
 };
 
-const toggleMobileSearch = () => {
-  mobileSearchOpen.value = !mobileSearchOpen.value;
-};
+const goHome = () => router.push("/");
+const goOrders = () => router.push("/orders");
+const goHotDeals = () => router.push("/hot-deal");
+const goAccount = () =>
+  currentUser.value ? router.push("/account") : router.push("/login");
+const toggleCart = () => (cartOpen.value = !cartOpen.value);
+const toggleMobileSearch = () =>
+  (mobileSearchOpen.value = !mobileSearchOpen.value);
+const handleScroll = () => (isScrolled.value = window.scrollY > 40);
 
-// ✅ Close on outside tap
-const handleOutsideClick = (e) => {
-  const overlay = document.querySelector(".mobile-search-overlay");
-  const icon = document.querySelector(".mobile-search-icon");
-  if (mobileSearchOpen.value && overlay && !overlay.contains(e.target) && !icon.contains(e.target)) {
-    mobileSearchOpen.value = false;
-  }
-};
+onMounted(() => window.addEventListener("scroll", handleScroll));
+onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
 
-onMounted(() => {
-  window.addEventListener("scroll", handleScroll);
-  document.addEventListener("click", handleOutsideClick);
+watch(itemCount, () => {
+  animateCart.value = true;
+  setTimeout(() => (animateCart.value = false), 400);
 });
-onBeforeUnmount(() => {
-  window.removeEventListener("scroll", handleScroll);
-  document.removeEventListener("click", handleOutsideClick);
-});
-
-// ✅ Disable scroll when mobile search open
-watch(mobileSearchOpen, (isOpen) => {
-  document.body.style.overflow = isOpen ? "hidden" : "auto";
-});
-
-// Navigation
-const goOrders = () => router.push('/orders');
-const goAccount = () => currentUser.value ? router.push('/account') : router.push('/signup');
-const goHotDeals = () => router.push('/hot-deal');
-const goHome = () => router.push('/');
 </script>
 
 <style scoped>
-/* Fix Cart alignment */
-.cart-li .cart-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+:root {
+  --purple-dark: #4a00e0;
+  --purple-light: #8e2de2;
+  --accent-gradient: linear-gradient(90deg, var(--purple-dark), var(--purple-light));
+  --shadow: rgba(142, 45, 226, 0.3);
+  --font-main: "Zalando Sans", sans-serif;
 }
 
-/* ---------------- Navbar Base ---------------- */
-.navbarcontainer {
+/* ================== VISIBILITY ================== */
+.pc-only {
+  display: flex;
+}
+.mobile-only {
+  display: none;
+}
+
+/* ================== 🟪 NAVBAR ================== */
+.navbar {
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
-  height: 80px;
-  background: #000;
+  height: 75px;
+  background: #000000;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
+  justify-content: center;
   z-index: 1000;
-  transition: all 0.4s ease;
+  transition: 0.3s ease;
+
 }
-.navbarcontainer.scrolled {
+.nav-inner {
+  width: 100%;
+padding: 0 10%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* 🔹 দুই পাশে equal 10% gap */
+  box-sizing: border-box;
+}
+.navbar.scrolled {
   background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.25);
+  box-shadow: 0 3px 15px var(--shadow);
 }
 
 /* ✅ Logo */
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: white;
+  gap: 8px;
   cursor: pointer;
-  position: relative;
-  z-index: 10001;
-  margin-left: 10%;
 }
-.logoimg img { width: 70px; height: 85%; }
-.logoname { font-size: 30px; color: white; font-family: "Abril Fatface", serif; }
+.logo img {
+  width: 70px; height: 85%;
+}
+.logo h3 {
+  font-size: 30px;
+  color: white;
+  font-family: "Abril Fatface", serif;
+  font-weight: 300;
+}
 
-/* ✅ Search Bar (PC) */
-.searchbar-container {
+/* ✅ Search Box */
+.search-box {
   position: relative;
   width: 40%;
+  display: flex;
   background: white;
   border-radius: 50px;
-  display: flex;
-  align-items: center;
   padding: 5px 15px;
+  box-sizing: border-box;
 }
-.searchbar-container input {
+.search-box input {
   border: none;
-  outline: none;
-  width: 100%;
-  padding: 10px 10px;
+  flex: 1;
+  padding: 10px;
   font-size: 15px;
+  outline: none;
   border-radius: 50px;
-  font-family: "Zalando Sans", sans-serif;
-}
-.search-icon {
-  background: linear-gradient(90deg, #4A00E0, #8E2DE2);
-  border-radius: 50%;
+font-family: "Zalando Sans", sans-serif;}
+.search-btn {
+  background: var(--accent-gradient);
   color: white;
-  padding: 8px;
+  border: none;
+  border-radius: 50%;
+  padding: 8px 12px;
   cursor: pointer;
+  font-size: 16px;
 }
 
-/* ✅ Suggestion Dropdown (PC) */
-.suggestions-box {
+/* ✅ Suggestions */
+.suggestion-list {
   position: absolute;
-  top: 55px;
+  top: 50px;
   left: 0;
-  width: 100%;
+  width: 95%;
   background: white;
   border-radius: 10px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-  overflow: hidden;
-  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 1001;
 }
-.suggestions-box li {
+.suggestion-list li {
   display: flex;
   align-items: center;
-  padding: 10px;
-  cursor: pointer;
+  padding: 8px;
   gap: 10px;
+  cursor: pointer;
 }
-.suggestions-box li:hover {
-  background: rgba(142,45,226,0.1);
+.suggestion-list li:hover {
+  background: rgba(142, 45, 226, 0.1);
 }
-.suggestions-box img {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
+.suggestion-list img {
+  width: 35px;
+  height: 35px;
   border-radius: 6px;
+  object-fit: cover;
 }
 
-/* ---------------- Nav Links ---------------- */
-.nav-links {
-  list-style: none;
+/* ✅ Nav Items */
+.nav-items {
   display: flex;
-  gap: 30px;
   align-items: center;
-  margin-right: 5%;
+  gap: 30px;
+  color: white;
+font-size: 14px; color: white; transition: all 0.3s ease; font-family: "Zalando Sans", sans-serif; font-weight: 500;
 }
-.nav-links li {
+.nav-items li {
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-size: 14px;
   cursor: pointer;
-  padding: 5px;
-  border-radius: 6px;
-  transition: all 0.3s ease;
+  transition: 0.3s ease;
   position: relative;
 }
-.icon { width: 25px; height: 25px; margin-bottom: 5px; filter: brightness(0) invert(1); transition: all 0.3s ease; }
-.icon-text { font-size: 14px; color: white; transition: all 0.3s ease; font-family: "Zalando Sans", sans-serif; font-weight: 500; }
-.nav-links li:hover .icon, .nav-links li:hover .icon-text {
-  color: #8E2DE2;
-  filter: brightness(0) invert(32%) sepia(84%) saturate(2800%) hue-rotate(257deg) brightness(90%) contrast(95%);
+.nav-items li img {
+  width: 30px;
+  height: 30px;
+  filter: brightness(0) invert(1);
+  margin-bottom: 3px;
 }
-.nav-links li:hover { background: rgba(142, 45, 226, 0.1); }
+.nav-items li:hover {
+  color: var(--purple-light);
+}
+.nav-items li:hover img {
+  filter: brightness(0) invert(32%) sepia(84%) saturate(2800%)
+    hue-rotate(257deg) brightness(90%) contrast(95%);
+}
 
-.bottom-bar{
+/* ✅ Cart Badge */
+.cart-badge,
+.cart-badge-mobile {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: red;
+  color: white;
+  font-size: 11px;
+  border-radius: 50%;
+  padding: 2px 6px;
+}
+.cart-badge-mobile {
+  font-size: 10px;
+  top: 0;
+  right: 12px;
+}
+.cart-badge.bounce,
+.cart-badge-mobile.bounce {
+  transform: scale(1.3);
+  transition: transform 0.3s ease;
+}
+
+/* ✅ Mobile Bottom Bar */
+.mobile-bottom-bar {
   display: none;
 }
 
-/* ---------------- Mobile Version ---------------- */
+/* ================== 📱 RESPONSIVE ================== */
 @media (max-width: 768px) {
-  .pc-only { display: none; }
-  .nav-links { display: none !important; }
-
-  .navbarcontainer {
-    justify-content: center;
-    padding: 0 10px;
-    z-index: 10000;
-    justify-content: space-between;
-    align-items: center;
+  .pc-only {
+    display: none;
   }
-
-  /* Mobile Search Icon */
-  .mobile-search-icon {
-    color: white;
-    font-size: 25px;
-    cursor: pointer;
-    background: linear-gradient(90deg, #4A00E0, #8E2DE2);
-    padding: 8px;
-    border-radius: 50%;
+  .mobile-only {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10PX;
-    z-index: 10001;
   }
 
-  /* ✅ Mobile Search Overlay */
-  .mobile-search-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: rgba(0,0,0,0.6);
-    z-index: 10000;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    overflow-y: auto;
-    backdrop-filter: blur(4px);
+  .nav-inner {
+    padding: 0 5%;
   }
 
-  .mobile-search-box {
-    width: 80%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: white;
-    border-radius: 50px;
-    padding: 10px 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-
-
-margin-right: 10%;
-    margin-left: 5%;
-  }
-
-  .mobile-search-box input {
-    flex: 1;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    padding: 10px 15px;
-    border-radius: 50px;
-    font-family: "Zalando Sans", sans-serif;
-
-  }
-
-  .close-icon {
-    font-size: 22px;
-    cursor: pointer;
-    margin-left: 10px;
-    color: #4A00E0;
-    transition: 0.3s;
-  }
-  .close-icon:hover {
-    color: #8E2DE2;
-    transform: rotate(90deg);
-  }
-
-  .mobile-suggestions {
-    width: 100%;
-    background: white;
-    border-radius: 10px;
-    margin-top: 15px;
-    overflow: hidden;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-  }
-  .mobile-suggestions li {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    gap: 10px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  .mobile-suggestions li:hover {
-    background: rgba(142,45,226,0.1);
-  }
-  .mobile-suggestions img {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    object-fit: cover;
-  }
-
-  /* Bottom Bar */
-  .bottom-bar {
+  /* 🔹 Bottom Bar */
+  .mobile-bottom-bar {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -484,49 +428,58 @@ margin-right: 10%;
     background: #000;
     display: flex;
     justify-content: space-around;
-    align-items: center;
     padding: 8px 0;
-    list-style: none;
-    z-index: 10001;
-    border-top: 1px solid rgba(142,45,226,0.3);
-    box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+    border-top: 1px solid rgba(142, 45, 226, 0.4);
   }
-  .bottom-bar li {
+  .mobile-bottom-bar ul {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    list-style: none;
+  }
+  .mobile-bottom-bar li {
     display: flex;
     flex-direction: column;
     align-items: center;
     color: white;
-    font-family: "Zalando Sans", sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    position: relative;
+    font-size: 12px;
   }
-  .bottom-bar li img {
+  .mobile-bottom-bar li img {
     width: 22px;
     height: 22px;
-    margin-bottom: 4px;
     filter: brightness(0) invert(1);
-    transition: all 0.3s ease;
   }
-  .bottom-bar li span {
-    color: white;
-    font-weight: 500;
+
+  /* 🔹 Mobile Search */
+  .mobile-search {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    padding: 20px;
+    backdrop-filter: blur(4px);
   }
-  .bottom-bar li:hover img,
-  .bottom-bar li:hover span {
-    color: #8E2DE2;
-    filter: brightness(0) invert(32%) sepia(84%) saturate(2800%)
-      hue-rotate(257deg) brightness(90%) contrast(95%);
+  .search-input {
+    background: white;
+    border-radius: 50px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
   }
-  .cart-badge-mobile {
-    position: absolute;
-    top: 0px;
-    right: 12px;
-    background: red;
-    color: white;
-    font-size: 10px;
-    border-radius: 50%;
-    padding: 2px 6px;
+  .search-input input {
+    border: none;
+    flex: 1;
+    font-size: 16px;
+    outline: none;
+  }
+  .close {
+    font-size: 22px;
+    color: var(--purple-dark);
+    margin-left: 8px;
+    cursor: pointer;
   }
 }
 </style>

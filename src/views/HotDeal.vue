@@ -1,18 +1,32 @@
 <template>
   <div>
+    <!-- 🟣 Navbar -->
     <Navbar />
 
+    <!-- 🟣 Hot Deals Section -->
     <div class="products-page">
       <h2 class="page-title">🔥 Hot Deals</h2>
-      <div class="products-grid">
+
+      <!-- Products Grid -->
+      <div v-if="hotDeals.length" class="products-grid">
         <ProductCard
           v-for="product in hotDeals"
           :key="product.id"
           :product="product"
         />
       </div>
+
+      <!-- Empty State -->
+      <div v-else class="empty">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+          alt="No Deals"
+        />
+        <p>No hot deals available right now!</p>
+      </div>
     </div>
 
+    <!-- 🟣 Footer -->
     <Footer />
   </div>
 </template>
@@ -22,19 +36,26 @@ import Navbar from "../components/NavBar.vue";
 import ProductCard from "../components/ProductCard.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
-import { supabase } from "../lib/supabase";
+import axios from "axios"; // ✅ Replaced supabase with axios (Node.js backend)
 
+// ✅ Hot Deals Data
 const hotDeals = ref([]);
 
+// ✅ Fetch from Node.js backend
 const fetchHotDeals = async () => {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("is_hot_deal", true);
-  if (!error) hotDeals.value = data;
+  try {
+    const res = await axios.get("http://localhost:5000/products");
+    const allProducts = res.data || [];
+
+    // 🔥 Filter products that have is_hot_deal = true
+    hotDeals.value = allProducts.filter(p => p.is_hot_deal === true);
+
+  } catch (err) {
+    console.error("❌ Failed to fetch hot deals:", err);
+  }
 };
 
-onMounted(() => fetchHotDeals());
+onMounted(fetchHotDeals);
 </script>
 
 <style scoped>
@@ -44,38 +65,53 @@ onMounted(() => fetchHotDeals());
   display: flex;
   flex-direction: column;
   margin-top: 70px;
+  font-family: "Zalando Sans", sans-serif;
 }
 
 .page-title {
   font-size: 2rem;
   margin-bottom: 20px;
   color: #8E2DE2;
+  text-align: center;
+  font-weight: 800;
 }
 
+/* ✅ Products grid */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 15px;
 }
 
-/* Responsive */
+/* 🟣 Empty state */
+.empty {
+  text-align: center;
+  margin-top: 50px;
+  color: #777;
+}
+.empty img {
+  width: 120px;
+  opacity: 0.8;
+  margin-bottom: 10px;
+}
+
+/* ✅ Responsive */
 @media (max-width: 1024px) {
   .products-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* ✅ Mobile - Always 2 per row */
 @media (max-width: 768px) {
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .products-page{
-    margin-top: 0;
+  .products-page {
+    width: 90%;
+    margin-top: 20px;
   }
 }
 
-/* Very small screens - keep 2 per row */
 @media (max-width: 480px) {
   .products-grid {
     grid-template-columns: repeat(2, 1fr);

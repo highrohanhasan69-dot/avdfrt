@@ -1,278 +1,474 @@
 <template>
-  <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-
-  <div>
-    <!-- Navbar -->
+  <div class="orders-page">
     <Navbar />
 
-    <div class="orders">
+    <section class="header">
       <h1>My Orders</h1>
 
-      <!-- যদি লগইন না থাকে -->
-      <div v-if="!currentUser" class="not-logged">
-        <p>Please login first to see your orders.</p>
+      <div class="toolbar">
+        <input
+          v-model="q"
+          class="search"
+          type="text"
+          placeholder="Search by Order ID or Product..."
+        />
+        <select v-model="statusFilter" class="select">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="delivered">Delivered</option>
+        </select>
       </div>
+    </section>
 
-      <!-- যদি লগইন থাকে -->
-      <div v-else>
-        <!-- ✅ Desktop Table View -->
-        <table class="orders-table desktop-only" v-if="orders.length > 0">
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Date</th>
-              <th>Products</th>
-              <th>Total</th>
-              <th>Payment</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="o in orders" :key="o.id">
-              <td>#{{ o.id }}</td>
-              <td>{{ formatDate(o.created_at) }}</td>
-              <td>
-                <ul class="product-list">
-                  <li v-for="(p, idx) in o.items" :key="idx">
-                    {{ p.name }} (x{{ p.quantity }})
-                    <span v-if="p.discount_percent">
-                      - {{ p.discount_percent }}% off
-                    </span>
-                  </li>
-                </ul>
-              </td>
-              <td>{{ o.total }}৳</td>
-              <td>{{ o.payment_method }}</td>
-              <td>
-                <span :class="['status', o.status.toLowerCase()]">
-                  {{ o.status }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Loader -->
+    <section v-if="loading" class="loader-wrap">
+      <div class="skeleton" v-for="n in 3" :key="n"></div>
+    </section>
 
-        <!-- ✅ Mobile Card View -->
-        <div class="orders-mobile" v-if="orders.length > 0">
-          <div class="order-card" v-for="o in orders" :key="o.id">
-            <div class="order-header">
-              <span class="order-id">#{{ o.id }}</span>
-              <span class="order-date">{{ formatDate(o.created_at) }}</span>
-            </div>
+    <!-- Empty -->
+    <section v-else-if="!filteredOrders.length" class="empty">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png"
+        alt="Empty"
+      />
+      <p>No orders found.</p>
+      <router-link to="/" class="btn">Go shopping</router-link>
+    </section>
 
-            <ul class="product-list">
-              <li v-for="(p, idx) in o.items" :key="idx">
-                {{ p.name }} (x{{ p.quantity }})
-              </li>
-            </ul>
+    <!-- Desktop Table -->
+    <section v-else class="table-wrap desktop-only">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Date & Time</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Payment</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="o in filteredOrders" :key="o.id">
+            <td class="order-col">
+              <span class="order-id">#{{ shortId(o.id) }}</span>
+            </td>
+            <td>{{ formatDate(o.created_at) }}</td>
+            <td class="items-cell">
+              <ul class="items-ul">
+                <li v-for="(p, i) in o.items" :key="i" class="item">
+                  <img :src="p.image_url || placeholder" :alt="p.name" />
+                  <span class="name">{{ p.name }}</span>
+                  <span class="meta">
+                    x{{ p.quantity }} · ৳{{ num(p.price) }}
+                  </span>
+                </li>
+              </ul>
+            </td>
+            <td class="total">৳{{ num(o.total) }}</td>
+            <td>{{ o.payment_method }}</td>
+            <td>
+              <span :class="['badge', o.status.toLowerCase()]">{{ o.status }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
-            <div class="order-info">
-              <p><strong>Total:</strong> {{ o.total }}৳</p>
-              <p><strong>Payment:</strong> {{ o.payment_method }}</p>
-              <p>
-                <strong>Status:</strong>
-                <span :class="['status', o.status.toLowerCase()]">
-                  {{ o.status }}
-                </span>
+    <!-- Mobile Cards -->
+    <section class="mobile-only cards">
+      <article v-for="o in filteredOrders" :key="o.id" class="card">
+        <header class="card-head">
+          <div class="left">
+            <h3>#{{ shortId(o.id) }}</h3>
+            <small>{{ formatDate(o.created_at) }}</small>
+          </div>
+          <span :class="['badge', o.status.toLowerCase()]">{{ o.status }}</span>
+        </header>
+
+        <ul class="card-items">
+          <li v-for="(p, i) in o.items" :key="i" class="card-item">
+            <img :src="p.image_url || placeholder" :alt="p.name" />
+            <div class="ci-right">
+              <p class="nm">{{ p.name }}</p>
+              <p class="in">
+                x{{ p.quantity }}
+                · ৳{{ num(p.price) }}
               </p>
             </div>
+          </li>
+        </ul>
+
+        <footer class="card-foot">
+          <div class="foot-left">
+            <span class="label">Payment</span>
+            <span>{{ o.payment_method }}</span>
           </div>
-        </div>
+          <div class="foot-right">
+            <span class="label">Total</span>
+            <strong>৳{{ num(o.total) }}</strong>
+          </div>
+        </footer>
+      </article>
+    </section>
 
-        <p v-else class="empty">No orders found.</p>
-      </div>
-    </div>
-
-    <!-- Footer -->
     <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
-import { supabase } from "@/lib/supabase"
 import Navbar from "@/components/NavBar.vue";
-import Footer from "@/components/Footer.vue"
+import Footer from "@/components/Footer.vue";
+import axios from "axios";
+import { ref, computed, onMounted } from "vue";
 
-const orders = ref([])
-const currentUser = ref(null)
+const orders = ref([]);
+const loading = ref(true);
+const q = ref("");
+const statusFilter = ref("");
 
-function formatDate(datetime) {
-  const d = new Date(datetime)
-  return d.toLocaleString("en-GB", {
+const placeholder = new URL("@/assets/no-image.png", import.meta.url).href;
+
+// helpers
+const shortId = (id) => String(id).slice(0, 8);
+const num = (v) => Number(v).toFixed(2);
+const formatDate = (d) =>
+  new Date(d).toLocaleString("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
-  })
-}
+    minute: "2-digit",
+  });
 
-onMounted(async () => {
-  const { data: { user } } = await supabase.auth.getUser()
-  currentUser.value = user
+// fetch
+const fetchOrders = async () => {
+  try {
+    loading.value = true;
+    const res = await axios.get("http://localhost:5000/api/checkout", {
+      withCredentials: true,
+    });
 
-  if (!user) return
-
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-
-  if (!error) {
-    orders.value = data
+    // Backend returns items/customer as JSON; keep safe:
+    orders.value = (res.data?.orders || []).map((o) => ({
+      ...o,
+      items: Array.isArray(o.items) ? o.items : JSON.parse(o.items || "[]"),
+      customer:
+        typeof o.customer === "object"
+          ? o.customer
+          : JSON.parse(o.customer || "{}"),
+    }));
+  } catch (e) {
+    console.error("Failed to load orders:", e);
+  } finally {
+    loading.value = false;
   }
-})
+};
+
+// filters
+const filteredOrders = computed(() => {
+  const term = q.value.trim().toLowerCase();
+  const s = statusFilter.value;
+
+  return orders.value.filter((o) => {
+    const matchStatus = s ? o.status?.toLowerCase() === s : true;
+    const inId = String(o.id).toLowerCase().includes(term);
+    const inItems = (o.items || []).some(
+      (it) => it.name?.toLowerCase().includes(term)
+    );
+    const matchQuery = term ? inId || inItems : true;
+    return matchStatus && matchQuery;
+  });
+});
+
+onMounted(fetchOrders);
 </script>
 
 <style scoped>
-.orders {
-  font-family: "Zalando Sans";
-  max-width: 1000px;
-  margin: 30px auto;
-  padding: 20px;
-  margin-top: 60px;
+/* Page Frame */
+.orders-page {
+  font-family: "Zalando Sans", system-ui, -apple-system, Segoe UI, Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+    "Segoe UI Emoji";
+  min-height: 100vh;
+  background: #f8f7fb;
 }
 
-h1 {
-  font-size: 26px;
-  margin-bottom: 20px;
-  text-align: center;
-  background: linear-gradient(45deg, #4a00e0, #8e2de2);
+/* Header */
+.header {
+  width: min(1100px, 92%);
+  margin: 90px auto 20px;
+  display: grid;
+  gap: 14px;
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.search,
+.select {
+  border: 1px solid #e6e3f4;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff;
+  outline: none;
+  font-size: 14px;
+}
+.search {
+  flex: 1;
+}
+.select {
+  min-width: 170px;
+}
+
+/* Loader */
+.loader-wrap {
+  width: min(1100px, 92%);
+  margin: 10px auto 40px;
+}
+.skeleton {
+  height: 90px;
+  border-radius: 16px;
+  background: linear-gradient(
+    90deg,
+    #f0ecff 25%,
+    #faf8ff 37%,
+    #f0ecff 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  margin-bottom: 14px;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty */
+.empty {
+  width: min(900px, 92%);
+  margin: 40px auto 70px;
+  text-align: center;
+  color: #666;
+}
+.empty img {
+  width: 120px;
+  opacity: 0.9;
+}
+.empty .btn {
+  display: inline-block;
+  margin-top: 14px;
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  text-decoration: none;
   font-weight: 700;
 }
 
-.not-logged,
-.empty {
-  text-align: center;
-  font-size: 16px;
-  color: #777;
-}
-
 /* Desktop Table */
+.table-wrap {
+  width: min(1100px, 92%);
+  margin: 10px auto 60px;
+}
 .orders-table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(142, 45, 226, 0.12);
 }
-
 .orders-table th,
 .orders-table td {
-  padding: 12px 15px;
+  padding: 14px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #f0ecff;
+  vertical-align: top;
 }
-
-.orders-table th {
-  background: linear-gradient(45deg, #4a00e0, #8e2de2);
+.orders-table thead th {
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
 }
-
-.product-list {
+.order-col .order-id {
+  font-weight: 800;
+  color: #4a00e0;
+}
+.items-cell {
+  padding-right: 8px;
+}
+.items-ul {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
 }
- .orders-mobile{
-  display: none;
- }
-.product-list li {
-  font-size: 14px;
-  margin-bottom: 4px;
+.item {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 10px;
+  align-items: center;
 }
-
-.status {
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 14px;
+.item img {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+.item .name {
   font-weight: 600;
+  color: #333;
+}
+.item .meta {
+  color: #8e2de2;
+  font-weight: 700;
+}
+.total {
+  font-weight: 800;
+  color: #4a00e0;
 }
 
-.status.pending {
+/* Badges */
+.badge {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  display: inline-block;
+}
+.badge.pending {
   background: #fff3cd;
   color: #856404;
 }
-
-.status.processing {
-  background: #cce5ff;
-  color: #004085;
+.badge.processing {
+  background: #e8f0ff;
+  color: #1a56db;
+}
+.badge.delivered {
+  background: #d9f7e9;
+  color: #0f7b4a;
 }
 
-.status.delivered {
-  background: #d4edda;
-  color: #155724;
+/* Mobile Cards */
+.cards {
+  width: min(680px, 92%);
+  margin: 0 auto 40px;
+  display: none;
+  gap: 14px;
+}
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(142, 45, 226, 0.08);
+  padding: 14px;
+  border-left: 5px solid #8e2de2;
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card-head h3 {
+  font-size: 16px;
+  margin: 0 0 2px;
+  color: #4a00e0;
+}
+.card-head small {
+  color: #666;
+}
+.card-items {
+  margin: 10px 0 6px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+.card-item {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+}
+.card-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+.ci-right .nm {
+  margin: 0 0 2px;
+  font-weight: 700;
+  color: #333;
+}
+.ci-right .in {
+  margin: 0;
+  color: #8e2de2;
+  font-weight: 700;
+  font-size: 13px;
+}
+.card-foot {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px dashed #eee;
+}
+.card-foot .label {
+  display: block;
+  color: #777;
+  font-size: 12px;
+}
+.card-foot strong {
+  color: #4a00e0;
 }
 
-/* Mobile Styles */
+/* Responsive */
+.desktop-only {
+  display: block;
+}
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .select {
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .desktop-only {
     display: none;
   }
-
-  .orders {
-    padding: 10px;
-    margin: 15px auto;
+  .mobile-only {
+    display: grid;
   }
-
-  h1 {
-    font-size: 22px;
+  .header {
+    margin: 76px auto 16px;
   }
-
-  .orders-mobile {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .order-card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 15px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    border-left: 4px solid #8e2de2;
-  }
-
-  .order-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 15px;
-    font-weight: 600;
-    color: #4a00e0;
-    margin-bottom: 10px;
-  }
-
-  .order-info {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #555;
-  }
-
-  .order-info p {
-    margin: 4px 0;
-  }
-
-  .product-list li {
-    font-size: 13px;
-    color: #333;
-  }
-
-  .status {
-    font-size: 13px;
-    padding: 5px 8px;
+  .header h1 {
+    font-size: 24px;
   }
 }
 </style>

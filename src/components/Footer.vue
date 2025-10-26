@@ -76,7 +76,9 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { supabase } from "@/lib/supabase";
+import axios from "axios";
+
+const API = "http://localhost:5000/api/footer";
 
 // Footer state variables
 const supportItems = ref([]);
@@ -85,44 +87,45 @@ const stayConnected = ref(null);
 const appLinks = ref([]);
 const socialLinks = ref([]);
 const appText = ref("");
-const copyright = ref("© 2025 Star Tech Ltd | All rights reserved");
-const poweredBy = ref("Star Tech");
+const copyright = ref("");
+const poweredBy = ref("");
 
+// Fetch all footer data
 const fetchFooterData = async () => {
-  // Support Items
-  const { data: supportData } = await supabase.from("footer_support").select("*");
-  supportItems.value = supportData || [];
+  try {
+    const [supportRes, aboutRes, stayRes, appRes, socialRes, textRes] = await Promise.all([
+      axios.get(`${API}/support`),
+      axios.get(`${API}/about`),
+      axios.get(`${API}/stay-connected`),
+      axios.get(`${API}/app-links`),
+      axios.get(`${API}/social-links`),
+      axios.get(`${API}/texts`)
+    ]);
 
-  // About Columns
-  const { data: aboutData } = await supabase.from("footer_about").select("*").order("column_order");
-  aboutColumns.value = [[], [], []];
-  (aboutData || []).forEach((item) => {
-    aboutColumns.value[item.column_order - 1].push(item);
-  });
+    supportItems.value = supportRes.data || [];
 
-  // Stay Connected
-  const { data: stayData } = await supabase.from("footer_stay_connected").select("*").single();
-  stayConnected.value = stayData;
+    aboutColumns.value = [[], [], []];
+    (aboutRes.data || []).forEach(item => {
+      aboutColumns.value[item.column_order - 1].push(item);
+    });
 
-  // App Links
-  const { data: appData } = await supabase.from("footer_app_links").select("*");
-  appLinks.value = appData || [];
+    stayConnected.value = stayRes.data || null;
+    appLinks.value = appRes.data || [];
+    socialLinks.value = socialRes.data || [];
 
-  // Social Links
-  const { data: socialData } = await supabase.from("footer_social_links").select("*");
-  socialLinks.value = socialData || [];
-
-  // Footer Texts
-  const { data: textsData } = await supabase.from("footer_texts").select("*").single();
-  if (textsData) {
-    appText.value = textsData.app_text;
-    copyright.value = textsData.copyright;
-    poweredBy.value = textsData.powered_by;
+    if (textRes.data) {
+      appText.value = textRes.data.app_text;
+      copyright.value = textRes.data.copyright;
+      poweredBy.value = textRes.data.powered_by;
+    }
+  } catch (err) {
+    console.error("❌ Footer fetch error:", err);
   }
 };
 
 onMounted(fetchFooterData);
 </script>
+
 
 <style scoped>
 .footer {

@@ -1,13 +1,13 @@
 <template>
   <div>
-   <Navbar />
+    <Navbar />
 
     <div class="home-content">
       <!-- Banner Slider -->
       <div class="banner-slider" v-if="banners.length">
-        <router-link :to="banners[currentIndex].link">
+        <router-link :to="banners[currentIndex].link || '#'">
           <img
-            :src="banners[currentIndex].image_url"
+            :src="banners[currentIndex].image_url || placeholder"
             :alt="banners[currentIndex].title || 'Banner'"
             class="banner-image"
           />
@@ -18,7 +18,6 @@
       <!-- Top Categories -->
       <div class="categories-section" v-if="categories.length">
         <h2 class="section-title">Top Categories</h2>
-
         <div class="categories-grid">
           <div
             v-for="category in categories"
@@ -27,15 +26,15 @@
           >
             <router-link :to="`/category/${category.slug}`">
               <img
-                :src="category.image_url"
-                :alt="category.name"
+                :src="category.image_url || placeholder"
+                :alt="category.slug"
                 class="category-image"
               />
-              <p>{{ category.name }}</p>
+              <p>{{ category.slug }}</p>
             </router-link>
           </div>
         </div>
-           <span class="section-link" @click="router.push('/categories')">See All Categories</span>
+        <span class="section-link" @click="router.push('/categories')">See All Categories</span>
       </div>
 
       <!-- Hot Deals Section -->
@@ -48,8 +47,7 @@
             :product="product"
           />
         </div>
-                <span class="section-link" @click="router.push('/hot-deal')">View All Hot Deals</span>
-
+        <span class="section-link" @click="router.push('/hot-deal')">View All Hot Deals</span>
       </div>
 
       <!-- Top Products Section -->
@@ -62,8 +60,7 @@
             :product="product"
           />
         </div>
-                <span class="section-link" @click="router.push('/top-products')">See All Top Products</span>
-
+        <span class="section-link" @click="router.push('/top-products')">See All Top Products</span>
       </div>
 
       <!-- All Products Section -->
@@ -76,14 +73,13 @@
             :product="product"
           />
         </div>
+        <span class="section-link" @click="router.push('/all-products')">View All Products</span>
       </div>
-              <span class="section-link" @click="router.push('/all-products')">View All Products</span>
-
     </div>
 
     <Footer />
   </div>
-<head>
+  <head>
     <meta charset="utf-8" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,76 +97,72 @@ import Navbar from "../components/NavBar.vue";
 import ProductCard from "../components/ProductCard.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted, onUnmounted } from "vue";
-import { supabase } from "../lib/supabase";
+import axios from "axios";
 import { useRouter } from "vue-router";
 
+const router = useRouter();
+const placeholder = new URL('@/assets/no-image.png', import.meta.url).href;
+
+// ------------------ Banners ------------------
 const banners = ref([]);
 const currentIndex = ref(0);
 let intervalId = null;
-const router = useRouter();
 
 const fetchBanners = async () => {
-  const { data, error } = await supabase.from("banners").select("*");
-  if (!error) banners.value = data;
+  try {
+    const res = await axios.get("http://localhost:5000/banners");
+    banners.value = res.data;
+  } catch (err) {
+    console.error(err);
+  }
 };
+
 const startSlider = () => {
   intervalId = setInterval(() => {
-    currentIndex.value = (currentIndex.value + 1) % banners.value.length;
+    if (banners.value.length) {
+      currentIndex.value = (currentIndex.value + 1) % banners.value.length;
+    }
   }, 4000);
 };
+
 onMounted(async () => {
   await fetchBanners();
-  if (banners.value.length) startSlider();
-});
-onUnmounted(() => {
-  clearInterval(intervalId);
+  startSlider();
 });
 
+onUnmounted(() => clearInterval(intervalId));
+
+// ------------------ Categories ------------------
 const categories = ref([]);
 const fetchCategories = async () => {
-  const { data, error } = await supabase.from("categories").select("*");
-  if (!error) categories.value = data;
+  try {
+    const res = await axios.get("http://localhost:5000/categories");
+    categories.value = res.data;
+  } catch (err) {
+    console.error(err);
+  }
 };
-onMounted(() => fetchCategories());
+onMounted(fetchCategories);
 
-// Hot Deals
-const hotDeals = ref([]);
-const fetchHotDeals = async () => {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("is_hot_deal", true)
-    .limit(10);
-  if (!error) hotDeals.value = data;
-};
-onMounted(() => fetchHotDeals());
-
-// Top Products
+// ------------------ Products ------------------
 const topProducts = ref([]);
-const fetchTopProducts = async () => {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("is_top_product", true)
-    .limit(10);
-  if (!error) topProducts.value = data;
-};
-onMounted(() => fetchTopProducts());
-
-// All Products (first 10)
+const hotDeals = ref([]);
 const allProducts = ref([]);
-const fetchAllProducts = async () => {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .limit(10);
-  if (!error) allProducts.value = data;
+
+const fetchProducts = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/products");
+    const data = res.data || [];
+    topProducts.value = data.filter(p => p.is_top_product);
+    hotDeals.value = data.filter(p => p.is_hot_deal);
+    allProducts.value = data;
+  } catch (err) {
+    console.error(err);
+  }
 };
-onMounted(() => fetchAllProducts());
+onMounted(fetchProducts);
 </script>
 
 <style scoped>
 @import "../views/home.css";
-
-
 </style>

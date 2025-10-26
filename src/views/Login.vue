@@ -1,10 +1,6 @@
 <template>
   <div>
-    <!-- 🟣 Navbar Component -->
-     <div class="navbar">
     <Navbar />
-</div>
-    <!-- 🟣 Login Page -->
     <div class="login-container">
       <h2 class="login-title">Login</h2>
       <form @submit.prevent="handleLogin" class="login-form">
@@ -13,72 +9,36 @@
         <button type="submit">Login</button>
       </form>
       <p class="signup-text">
-        Don’t have an account?
-        <router-link to="/signup">Signup</router-link>
+        Don’t have an account? <router-link to="/signup">Signup</router-link>
       </p>
     </div>
-
-    <!-- 🟣 Footer Component -->
-    <Footer />
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import { supabase } from "@/lib/supabase";
+import axios from "axios";
 import { useRouter } from "vue-router";
-
-// Navbar + Footer import
 import Navbar from "@/components/NavBar.vue";
-import Footer from "@/components/Footer.vue";
 
 const router = useRouter();
-const loginInput = ref(""); // email or phone
+const loginInput = ref("");
 const password = ref("");
 
-// নতুন function: phone number দিয়ে login
-async function loginWithPhone(phoneNumber, passwordToUse) {
-  const email = `${phoneNumber}@avado.com`;
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password: passwordToUse,
-  });
-
-  if (error) {
-    console.error("Login failed:", error.message);
-    alert("Login failed. Try again.");
-    return null;
-  }
-
-  alert("Login successful!");
-  return data.user;
-}
-
-// handleLogin function
 const handleLogin = async () => {
-  // যদি input phone number হয়
-  if (/^\d{10,15}$/.test(loginInput.value)) {
-    const user = await loginWithPhone(loginInput.value, password.value);
-    if (user) {
-      router.push("/"); // ✅ Home page redirect
-    }
-  } else {
-    // Normal email login
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginInput.value,
-      password: password.value,
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Login successful!");
-      router.push("/"); // ✅ Home page redirect
-    }
+  try {
+    const res = await axios.post("http://localhost:5000/api/auth/login", {
+      loginInput: loginInput.value,
+      password: password.value
+    }, { withCredentials: true });
+    alert(res.data.message);
+    router.push("/");
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed");
   }
 };
 </script>
+
 
 <style scoped>
 .login-container {

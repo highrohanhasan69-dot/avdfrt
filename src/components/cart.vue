@@ -1,137 +1,319 @@
 <template>
-  <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  </head>
+  <div class="overlay" @click.self="closeDrawer">
+    <div class="drawer">
+      <!-- ✅ Header -->
+      <header>
+        <h2>🛒 My Cart</h2>
+        <button class="close" @click="closeDrawer">✖</button>
+      </header>
 
-  <div class="cart-panel" :class="{ open: open }">
-    <div class="cart-header">
-      <h2>My Cart</h2>
-      <button class="close-cart" @click="$emit('close')">×</button>
-    </div>
+      <!-- ✅ Cart Content -->
+      <section v-if="cart.length && !loading" class="cart-list">
+        <div v-for="item in cart" :key="item.id" class="cart-item">
+          <img :src="item.image_url" alt="Product Image" class="product-image" />
 
-    <div v-if="cartStore.items.length">
-      <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
-        <div class="item-info">
-          <img :src="getImageUrl(item)" alt="Product Image" class="item-img" />
           <div class="details">
-            <p class="name">{{ item.name }}</p>
-            <p class="price">{{ item.price }}৳</p>
-            <p v-if="item.selectedVariants?.length" class="variants">
-              <span v-for="(v, i) in item.selectedVariants" :key="i">
-                {{ v.variantName }}: {{ v.optionName }}
-              </span>
-            </p>
-          </div>
-        </div>
+            <h3>{{ item.name }}</h3>
 
-        <div class="item-actions">
-          <div class="quantity-control">
-            <button @click="decrease(item)">-</button>
-            <span>{{ item.quantity }}</span>
-            <button @click="increase(item)">+</button>
+            <!-- ✅ Price (support discount) -->
+            <p class="price">
+              <template v-if="item.discount_percent">
+                <span class="discounted">৳ {{ discountedPrice(item).toFixed(2) }}</span>
+                <span class="original">৳ {{ item.price }}</span>
+              </template>
+              <template v-else>৳ {{ item.price }}</template>
+            </p>
+
+            <div class="quantity">
+              <button @click="decrease(item)">-</button>
+              <span>{{ item.quantity }}</span>
+              <button @click="increase(item)">+</button>
+            </div>
           </div>
-          <button class="remove-btn" @click="remove(item)">
-            <i class="fas fa-trash-alt"></i>
+
+          <!-- ✅ Remove Button (visible now) -->
+          <button class="remove" @click="remove(item.id)" title="Remove item">
+            🗑
           </button>
         </div>
-      </div>
 
-      <div class="cart-footer">
-        <p>Total: {{ cartStore.totalPrice }}৳</p>
-        <button class="checkout-btn" @click="goToCheckout">Checkout</button>
-      </div>
+        <!-- ✅ Subtotal -->
+        <div class="cart-summary">
+          <p class="total-text">Subtotal:</p>
+          <p class="total-amount">৳ {{ totalPrice }}</p>
+        </div>
+
+        <button class="checkout-btn" @click="goCheckout">Proceed to Checkout</button>
+      </section>
+
+      <section v-else-if="loading" class="empty-box">
+        <p>Loading your cart...</p>
+      </section>
+
+      <section v-else class="empty-box">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png"
+          alt="Empty"
+        />
+        <p>Your cart is empty 🛍️</p>
+      </section>
     </div>
-    <div v-else>No items in cart.</div>
   </div>
 </template>
 
 <script setup>
-import { useCartStore } from "@/components/cart.js";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { reactive } from "vue";
+import { useCart } from "@/composables/useCart";
 
-const cartStore = useCartStore();
+const emit = defineEmits(["close"]);
+const { cart, loading, fetchCart, addToCart } = useCart();
 const router = useRouter();
-defineProps({ open: Boolean });
 
-const getImageUrl = (item) => {
-  if (item.image) return item.image;
-  if (item.image_url) return item.image_url;
-  if (Array.isArray(item.images) && item.images.length > 0) return item.images[0];
-  return "https://via.placeholder.com/60x60?text=No+Image";
+onMounted(fetchCart);
+
+// ✅ Discounted Price
+const discountedPrice = (item) => {
+  if (!item.discount_percent) return item.price;
+  const price = Number(item.price);
+  const discount = Number(item.discount_percent);
+  return price - (price * discount) / 100;
 };
 
-const goToCheckout = () => router.push("/checkout");
+// ✅ Total with discounts
+const totalPrice = computed(() =>
+  cart.value.reduce(
+    (sum, item) => sum + discountedPrice(item) * item.quantity,
+    0
+  )
+);
 
-// ✅ Delete function
-const remove = (item) => {
-  if(confirm(`Remove "${item.name}" from cart?`)) {
-    cartStore.removeItem(item);
+// ✅ Increase/Decrease
+const increase = async (item) => {
+  await addToCart(item.product_id, 1);
+  await fetchCart();
+};
+
+const decrease = async (item) => {
+  if (item.quantity > 1) {
+    await fetch(`http://localhost:5000/api/cart/update/${item.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantity: item.quantity - 1 }),
+      credentials: "include",
+    });
+    await fetchCart();
   }
 };
 
-// ✅ Increase/Decrease quantity
-const increase = (item) => cartStore.increaseQuantity(item);
-const decrease = (item) => cartStore.decreaseQuantity(item);
+// ✅ Remove Product from Cart (Backend)
+const remove = async (id) => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/cart/remove/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (res.ok) {
+      await fetchCart();
+    }
+  } catch (err) {
+    console.error("❌ Remove item failed:", err);
+  }
+};
+
+// ✅ Close Drawer & Checkout
+const closeDrawer = () => emit("close");
+const goCheckout = () => {
+  emit("close");
+  router.push("/checkout");
+};
 </script>
 
 <style scoped>
-.cart-panel {
-   font-family: "Zalando Sans";
+/* 🔹 Overlay */
+.overlay {
   position: fixed;
-  top: 0;
-  right: -400px;
-  width: 350px;
-  height: 100vh;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+/* 🔹 Drawer */
+.drawer {
   background: #fff;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+  width: 400px;
+  height: 100vh;
+  box-shadow: -3px 0 15px rgba(0, 0, 0, 0.25);
   padding: 20px;
-  transition: right 0.3s ease;
-  z-index: 99989999;
-}
-.cart-panel.open { right: 0; }
-
-.cart-header { display: flex; justify-content: space-between; align-items: center; }
-.close-cart { background: #8E2DE2; color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 20px; }
-
-.cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
-.item-info { display: flex; gap: 10px; }
-.item-img { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
-.details { display: flex; flex-direction: column; font-size: 14px; }
-.name { font-weight: bold; }
-.price { color: #8E2DE2; font-size: 14px; }
-.variants { font-size: 12px; color: #555; }
-
-.item-actions { display: flex; align-items: center; gap: 10px; }
-
-.quantity-control { display: flex; align-items: center; gap: 6px; }
-.quantity-control button {
-  padding: 4px 8px;
-  background: #8E2DE2;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease forwards;
+  overflow-y: auto;
 }
 
-.remove-btn {
-  background: #ff4d4f;
+/* 🔹 Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgba(142, 45, 226, 0.2);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+header h2 {
+  color: #4a00e0;
+  font-size: 20px;
+  font-weight: 700;
+}
+.close {
+  background: none;
   border: none;
-  color: white;
-  padding: 5px 8px;
-  border-radius: 6px;
+  font-size: 22px;
   cursor: pointer;
+  color: #8e2de2;
+  transition: 0.2s;
+}
+.close:hover {
+  transform: rotate(90deg);
+}
+
+/* 🔹 Cart Items */
+.cart-list {
+  flex-grow: 1;
+}
+.cart-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 16px;
+  border-bottom: 1px dashed #ddd;
+  padding: 10px 0;
+  position: relative;
 }
-.remove-btn i { pointer-events: none; }
+.product-image {
+  width: 65px;
+  height: 65px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 10px;
+}
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.details h3 {
+  font-size: 15px;
+  color: #333;
+  font-weight: 600;
+}
+.price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.price .discounted {
+  color: #e67e22;
+  font-weight: 700;
+}
+.price .original {
+  color: #999;
+  text-decoration: line-through;
+  font-size: 13px;
+}
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quantity button {
+  background: #8e2de2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  width: 26px;
+  height: 26px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.quantity button:hover {
+  background: #4a00e0;
+}
 
-.cart-footer { margin-top: 20px; text-align: center; }
-.checkout-btn { background: #8E2DE2; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+/* ✅ Remove Button Visible */
+.remove {
+  position: absolute;
+  right: 5px;
+  top: 35%;
+  background: transparent;
+  border: none;
+  color: #e74c3c;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.remove:hover {
+  transform: scale(1.2);
+}
+
+/* 🔹 Subtotal */
+.cart-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid rgba(142, 45, 226, 0.1);
+}
+.total-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #333;
+}
+.total-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #4a00e0;
+}
+
+/* 🔹 Checkout */
+.checkout-btn {
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
+  border: none;
+  color: white;
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.checkout-btn:hover {
+  background: linear-gradient(90deg, #8e2de2, #4a00e0);
+  transform: scale(1.02);
+}
+
+/* 🔹 Animation */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* 🔹 Scrollbar */
+.drawer::-webkit-scrollbar {
+  width: 6px;
+}
+.drawer::-webkit-scrollbar-thumb {
+  background-color: rgba(142, 45, 226, 0.3);
+  border-radius: 5px;
+}
 </style>

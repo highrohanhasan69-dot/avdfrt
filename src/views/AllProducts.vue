@@ -1,15 +1,30 @@
 <template>
   <div>
+    <!-- 🟣 Navbar -->
     <Navbar />
 
+    <!-- 🟣 All Products Section -->
     <h2 class="page-title">🛒 All Products</h2>
-    <div class="products-grid">
+
+    <!-- Products Grid -->
+    <div v-if="allProducts.length" class="products-grid">
       <ProductCard
         v-for="product in allProducts"
         :key="product.id"
         :product="product"
       />
     </div>
+
+    <!-- Empty State -->
+    <div v-else class="empty">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+        alt="No Products"
+      />
+      <p>No products available at the moment!</p>
+    </div>
+
+    <!-- 🟣 Footer -->
     <Footer />
   </div>
 </template>
@@ -19,14 +34,22 @@ import Navbar from "../components/NavBar.vue";
 import ProductCard from "../components/ProductCard.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
-import { supabase } from "../lib/supabase";
+import axios from "axios"; // ✅ Node.js backend data fetcher
 
+// ✅ Reactive product list
 const allProducts = ref([]);
+
+// ✅ Fetch from Node.js backend
 const fetchAllProducts = async () => {
-  const { data, error } = await supabase.from("products").select("*");
-  if (!error) allProducts.value = data;
+  try {
+    const res = await axios.get("http://localhost:5000/products");
+    allProducts.value = res.data || [];
+  } catch (err) {
+    console.error("❌ Failed to fetch all products:", err);
+  }
 };
-onMounted(() => fetchAllProducts());
+
+onMounted(fetchAllProducts);
 </script>
 
 <style scoped>
@@ -38,6 +61,7 @@ onMounted(() => fetchAllProducts());
   margin-left: 10%;
   margin-right: 10%;
   margin-top: 10px;
+  margin-bottom: 40px;
 }
 
 /* Page title gradient & underline */
@@ -61,6 +85,18 @@ onMounted(() => fetchAllProducts());
   margin-top: 6px;
   background: linear-gradient(90deg, #4A00E0, #8E2DE2);
   border-radius: 2px;
+}
+
+/* Empty State */
+.empty {
+  text-align: center;
+  margin-top: 60px;
+  color: #777;
+}
+.empty img {
+  width: 120px;
+  opacity: 0.8;
+  margin-bottom: 10px;
 }
 
 /* Responsive */

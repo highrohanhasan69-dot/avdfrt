@@ -3,30 +3,28 @@
     <!-- Navbar -->
     <Navbar />
 
-    <!-- Page Title -->
-
-
-    <!-- Categories Grid -->
+    <!-- Categories Section -->
     <div class="categories-section" v-if="categories.length">
-         <h2 class="page-title">📂 All Categories</h2>
-        <div class="categories-grid">
-          <div
-            v-for="category in categories"
-            :key="category.id"
-            class="category-card"
-          >
-            <router-link :to="`/category/${category.slug}`">
-              <img
-                :src="category.image_url"
-                :alt="category.name"
-                class="category-image"
-              />
-              <p>{{ category.name }}</p>
-            </router-link>
-          </div>
-        </div>
+      <h2 class="page-title">📂 All Categories</h2>
 
+      <div class="categories-grid">
+        <div
+          v-for="category in categories"
+          :key="category.id"
+          class="category-card"
+        >
+          <router-link :to="`/category/${category.slug}`">
+            <img
+              :src="category.image_url"
+              :alt="category.name"
+              class="category-image"
+            />
+            <p>{{ category.name }}</p>
+          </router-link>
+        </div>
       </div>
+    </div>
+
     <!-- Footer -->
     <Footer />
   </div>
@@ -36,22 +34,26 @@
 import Navbar from "../components/NavBar.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
-import { supabase } from "../lib/supabase";
+import axios from "axios";
 
 const categories = ref([]);
 
+// ✅ Fetch categories from Node.js backend
 const fetchCategories = async () => {
-  const { data, error } = await supabase.from("categories").select("*");
-  if (!error) categories.value = data;
+  try {
+    const res = await axios.get("http://localhost:5000/categories");
+    categories.value = res.data || [];
+  } catch (err) {
+    console.error("❌ Error fetching categories:", err.message);
+  }
 };
 
-onMounted(() => fetchCategories());
+onMounted(fetchCategories);
 </script>
 
 <style scoped>
 /* Categories */
 .categories-section {
-
   margin-left: 10%;
   margin-right: 10%;
   margin-bottom: 40px;
@@ -68,7 +70,7 @@ onMounted(() => fetchCategories());
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
   width: 200px;
   height: 150px;
@@ -88,10 +90,10 @@ onMounted(() => fetchCategories());
 .category-card p {
   font-size: 14px;
 }
+
 /* ======== Page Title ======== */
 .page-title {
   margin-top: 100px;
-
   font-size: 2rem;
   font-weight: 700;
   background: linear-gradient(90deg, #4A00E0, #8E2DE2);
@@ -111,8 +113,6 @@ onMounted(() => fetchCategories());
   border-radius: 2px;
 }
 
-
-
 /* ======== Responsive ======== */
 @media (max-width: 1024px) {
   .categories-grid {
@@ -121,43 +121,35 @@ onMounted(() => fetchCategories());
 }
 
 @media (max-width: 768px) {
-  .categories-section{
+  .categories-section {
     margin-left: 5%;
     margin-right: 5%;
   }
-  .categories-section {
-  margin-top: 0px;
-}
 
-  /* Categories grid 1 row 3-4 card */
   .categories-grid {
-
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
+
   .category-card {
-  text-align: center;
-  border-radius: 8px;
-height: 100px;
-width: 100px;
-
-}
-
-.category-card:hover {
-  transform: scale(1.05);
-}
-
-.category-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-  .categories-grid {
-    grid-template-columns: repeat(3, 1fr);
+    text-align: center;
+    border-radius: 8px;
+    height: 100px;
+    width: 100px;
   }
+
+  .category-card:hover {
+    transform: scale(1.05);
+  }
+
+  .category-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   .page-title {
-margin: 12px;
+    margin: 12px;
     font-size: 1.5rem;
   }
 }

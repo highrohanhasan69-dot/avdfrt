@@ -1,300 +1,459 @@
 <template>
-  <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-  </head>
-
   <div>
-    <!-- 🟣 Navbar Component -->
+    <!-- Navbar -->
     <Navbar />
 
-    <!-- 🟣 Checkout Page -->
     <div class="checkout-page">
       <h1 class="checkout-title">Checkout</h1>
 
       <div class="checkout-container">
-        <!-- 🟣 Left: Order Items -->
+        <!-- 🟣 Left: Order Summary -->
         <div class="order-summary">
-          <h2>Your Order</h2>
+          <h2>Your Cart</h2>
 
-          <div v-if="cartStore.items.length">
-            <div v-for="(item, i) in cartStore.items" :key="i" class="summary-item">
-              <img :src="getImageUrl(item)" alt="Product Image" class="summary-img" />
+          <div v-if="cart.length">
+            <div v-for="item in cart" :key="item.id" class="summary-item">
+              <img :src="item.image_url" alt="Product Image" class="summary-img" />
               <div class="summary-details">
-                <p class="name">{{ item.name }}</p>
-                <p class="price">{{ item.price }}৳</p>
-                <p v-if="item.selectedVariants?.length" class="variants">
-                  <span v-for="(v, idx) in item.selectedVariants" :key="idx">
-                    {{ v.variantName }}: {{ v.optionName }}
-                  </span>
+                <p class="summary-name">{{ item.name }}</p>
+
+                <!-- ✅ Discount Price Logic -->
+                <p class="summary-price">
+                  <template v-if="item.discount_percent">
+                    <span class="discounted">
+                      ৳{{ discountedPrice(item).toFixed(2) }}
+                    </span>
+                    <span class="original">৳{{ item.price }}</span>
+                  </template>
+                  <template v-else>
+                    ৳{{ item.price }}
+                  </template>
+                  × {{ item.quantity }}
                 </p>
-                <p class="qty">Qty: {{ item.quantity }}</p>
               </div>
             </div>
 
-            <p class="total">Total: {{ cartStore.totalPrice }}৳</p>
+            <div class="total-section">
+              <h3>Total: ৳{{ totalPrice }}</h3>
+            </div>
           </div>
-          <div v-else class="empty">Your cart is empty.</div>
+
+          <div v-else>
+            <p>Your cart is empty.</p>
+          </div>
         </div>
 
-        <!-- 🟣 Right: Checkout Form -->
-        <form class="checkout-form" @submit.prevent="placeOrder">
-          <h2>Billing Details</h2>
+        <!-- 🟣 Right: Customer Details -->
+        <div class="checkout-form">
+          <h2>Customer Details</h2>
 
-          <input v-model="customerName" placeholder="Full Name" required />
-          <input v-model="customerPhone" placeholder="Phone" required />
-          <input v-model="customerAddress" placeholder="Full Address" required />
+          <form @submit.prevent="placeOrder">
+            <input
+              v-model="customer.name"
+              type="text"
+              placeholder="Full Name"
+              required
+            />
+            <input
+              v-model="customer.phone"
+              type="text"
+              placeholder="Phone Number"
+              required
+            />
+            <input
+              v-model="customer.address"
+              type="text"
+              placeholder="Full Address"
+              required
+            />
+            <input
+              v-model="customer.district"
+              type="text"
+              placeholder="District (Optional)"
+            />
+            <input
+              v-model="customer.upazila"
+              type="text"
+              placeholder="Upazila (Optional)"
+            />
+            <input
+              v-model="customer.thana"
+              type="text"
+              placeholder="Thana (Optional)"
+            />
 
-          <h3>Payment Method</h3>
-          <div class="payment-option">
-            <label class="checkbox-label">
-              <span>Cash on Delivery</span>
-              <input
-                type="checkbox"
-                v-model="paymentMethod"
-                true-value="Cash on Delivery"
-                false-value=""
-                checked
-              />
-            </label>
-          </div>
+            <label>Payment Method</label>
+            <select v-model="paymentMethod">
+              <option>Cash on Delivery</option>
+              <option>Online Payment</option>
+            </select>
 
-          <button type="submit" :disabled="isPlacingOrder">
-            {{ isPlacingOrder ? "Placing Order..." : "Confirm Order" }}
-          </button>
-        </form>
+            <button type="submit" class="checkout-btn">Confirm Order</button>
+          </form>
+        </div>
       </div>
     </div>
 
-    <!-- 🟣 Footer Component -->
+    <!-- Footer -->
     <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useCartStore } from "@/components/cart.js";
-import { supabase } from "@/lib/supabase";
-
-// Components
 import Navbar from "@/components/NavBar.vue";
 import Footer from "@/components/Footer.vue";
+import axios from "axios";
+import { ref, computed, onMounted } from "vue";
+import { useCart } from "@/composables/useCart";
 
-const cartStore = useCartStore();
-const router = useRouter();
+const { cart, fetchCart } = useCart();
 
-const customerName = ref("");
-const customerPhone = ref("");
-const customerAddress = ref("");
-const paymentMethod = ref("Cash on Delivery");
-const isPlacingOrder = ref(false);
-const currentUser = ref(null);
-
-onMounted(async () => {
-  const { data } = await supabase.auth.getUser();
-  currentUser.value = data.user || null;
+const customer = ref({
+  name: "",
+  phone: "",
+  address: "",
+  district: "",
+  upazila: "",
+  thana: "",
 });
 
-const getImageUrl = (item) => {
-  if (item.image) return item.image;
-  if (item.image_url) return item.image_url;
-  if (Array.isArray(item.images) && item.images.length > 0) return item.images[0];
-  return "https://via.placeholder.com/80x80?text=No+Image";
+const paymentMethod = ref("Cash on Delivery");
+
+// ✅ Discounted Price Function
+const discountedPrice = (item) => {
+  const price = Number(item.price);
+  const discount = Number(item.discount_percent || 0);
+  if (!discount) return price;
+  return price - (price * discount) / 100;
 };
 
+// ✅ Total Price (discount respected)
+const totalPrice = computed(() =>
+  cart.value.reduce(
+    (sum, item) =>
+      sum + discountedPrice(item) * (item.quantity || 1),
+    0
+  ).toFixed(2)
+);
+
+// ✅ Place Order Function
 const placeOrder = async () => {
-  if (cartStore.items.length === 0) return alert("Cart is empty!");
-
-  // ✅ শুধু Name, Phone, Address validate
-  if (!customerName.value || !customerPhone.value || !customerAddress.value)
-    return alert("Please fill all details!");
-
-  isPlacingOrder.value = true;
-
   try {
-    let userId;
-    if (currentUser.value) {
-      userId = currentUser.value.id;
-    } else {
-      const email = `${customerPhone.value}@avado.com`;
-      const password = customerPhone.value;
-
-      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (loginError && loginError.message.includes("Invalid login credentials")) {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { name: customerName.value, phone: customerPhone.value } },
-        });
-        if (signUpError) throw signUpError;
-
-        const { error: loginError2 } = await supabase.auth.signInWithPassword({ email, password });
-        if (loginError2) throw loginError2;
-
-        currentUser.value = signUpData.user;
-        userId = currentUser.value.id;
-      } else if (loginData.user) {
-        currentUser.value = loginData.user;
-        userId = currentUser.value.id;
-      }
+    if (!cart.value.length) {
+      alert("Your cart is empty!");
+      return;
     }
 
-    const orderData = {
-      items: cartStore.items,
-      total: cartStore.totalPrice,
-      customer: {
-        name: customerName.value,
-        phone: customerPhone.value,
-        address: customerAddress.value,
-      },
+    const payload = {
+      items: cart.value.map((i) => ({
+        product_id: i.product_id,
+        name: i.name,
+        quantity: i.quantity,
+        price: discountedPrice(i).toFixed(2),
+        image_url: i.image_url,
+        discount_percent: i.discount_percent,
+      })),
+      total: totalPrice.value,
+      customer: customer.value,
       payment_method: paymentMethod.value,
-      status: "Pending",
-      user_id: userId,
-      created_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("orders").insert(orderData);
-    if (error) throw error;
+    const res = await axios.post("http://localhost:5000/api/checkout", payload, {
+      withCredentials: true,
+    });
 
-    cartStore.clearCart();
-    alert("Order placed successfully!");
-    router.push("/orders");
+    if (res.data.success) {
+      alert("✅ Order placed successfully!");
+      customer.value = {
+        name: "",
+        phone: "",
+        address: "",
+        district: "",
+        upazila: "",
+        thana: "",
+      };
+      await fetchCart(); // clear cart
+    } else {
+      alert("❌ Failed to place order!");
+    }
   } catch (err) {
-    console.error(err);
-    alert("Failed to place order. Try again.");
-  } finally {
-    isPlacingOrder.value = false;
+    console.error("❌ Checkout failed:", err);
+    alert("Checkout failed. Please try again!");
   }
 };
+
+onMounted(fetchCart);
 </script>
 
 <style scoped>
 .checkout-page {
-  font-family: "Zalando Sans";
-  padding: 40px 10%;
-  background: #f9f9ff;
-  margin-top: 70px;
+  margin: 100px auto;
+  width: 85%;
+  max-width: 1200px;
+  font-family: "Zalando Sans", sans-serif;
 }
 
 .checkout-title {
   text-align: center;
-  color: #4a00e0;
+  font-size: 32px;
   font-weight: 700;
-  margin-bottom: 30px;
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 40px;
 }
 
 .checkout-container {
   display: flex;
-  gap: 30px;
-  align-items: flex-start;
   flex-wrap: wrap;
+  gap: 40px;
 }
 
+/* 🟣 Order Summary */
 .order-summary {
   flex: 1;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  min-width: 350px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.1);
 }
-.order-summary h2 {
-  margin-bottom: 15px;
-  color: #4a00e0;
-  font-size: 18px;
-}
+
 .summary-item {
   display: flex;
-  gap: 12px;
-  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+  border-bottom: 1px solid #eee;
   padding: 10px 0;
 }
 .summary-img {
-  width: 70px;
-  height: 70px;
-  border-radius: 10px;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
   object-fit: cover;
+  margin-right: 15px;
 }
-.summary-details { flex: 1; }
-.name { font-weight: 600; }
-.price { color: #8E2DE2; font-size: 15px; }
-.variants { font-size: 13px; color: #666; }
-.qty { font-size: 13px; color: #444; }
-.total {
-  text-align: right;
-  margin-top: 15px;
-  font-weight: bold;
-  color: #4A00E0;
+.summary-details {
+  flex: 1;
 }
-.empty {
-  text-align: center;
+.summary-name {
+  font-weight: 600;
+  color: #333;
+}
+.summary-price {
+  font-size: 15px;
+  color: #555;
+}
+.discounted {
+  color: #e67e22;
+  font-weight: 600;
+}
+.original {
+  text-decoration: line-through;
   color: #999;
-  padding: 20px 0;
+  font-size: 13px;
+  margin-left: 6px;
+}
+.total-section {
+  margin-top: 15px;
+  text-align: right;
+}
+.total-section h3 {
+  color: #4a00e0;
+  font-size: 20px;
+  font-weight: 700;
 }
 
+/* 🟣 Checkout Form */
 .checkout-form {
   flex: 1;
-  background: white;
+  min-width: 350px;
+  background: #fff;
   padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-.checkout-form h2 {
-  color: #4A00E0;
-  margin-bottom: 15px;
-}
-.checkout-form input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  outline: none;
-  transition: border 0.2s;
-}
-.checkout-form input:focus {
-  border-color: #8E2DE2;
-  box-shadow: 0 0 4px rgba(142,45,226,0.2);
-}
-.payment-option {
-  margin: 15px 0;
-}
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 15px;
-  flex-direction: row-reverse;
-}
-.checkbox-label input[type="checkbox"] {
-  accent-color: #8E2DE2;
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.1);
 }
 
-button[type="submit"] {
+.checkout-form h2 {
+  margin-bottom: 20px;
+  color: #4a00e0;
+}
+
+.checkout-form input,
+.checkout-form select {
   width: 100%;
-  background: linear-gradient(90deg, #4A00E0, #8E2DE2);
-  color: white;
-  border: none;
-  padding: 12px;
+  padding: 10px;
+  margin-bottom: 10px;
   border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.checkout-btn {
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
+  color: #fff;
+  padding: 12px 0;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  transition: opacity 0.2s;
+  font-size: 16px;
+  transition: all 0.3s;
 }
-button[type="submit"]:hover {
+.checkout-btn:hover {
   opacity: 0.9;
+  transform: scale(1.02);
 }
 
-@media (max-width: 900px) {
+/* ✅ MOBILE RESPONSIVE DESIGN */
+@media (max-width: 992px) {
+  .checkout-page {
+    width: 95%;
+    margin: 60px auto;
+  }
+
+  .checkout-title {
+    font-size: 26px;
+    margin-bottom: 30px;
+  }
+
   .checkout-container {
     flex-direction: column;
+    gap: 25px;
+  }
+
+  .order-summary,
+  .checkout-form {
+    min-width: 100%;
+    padding: 20px;
+  }
+
+  .summary-item {
+    align-items: flex-start;
+  }
+
+  .summary-img {
+    width: 65px;
+    height: 65px;
+  }
+
+  .summary-details {
+    margin-left: 8px;
+  }
+
+  .summary-name {
+    font-size: 15px;
+  }
+
+  .summary-price {
+    font-size: 14px;
+  }
+
+  .total-section h3 {
+    font-size: 18px;
+  }
+
+  .checkout-form input,
+  .checkout-form select {
+    font-size: 13px;
+    padding: 9px;
+  }
+
+  .checkout-btn {
+    font-size: 15px;
+    padding: 10px 0;
   }
 }
+
+/* ✅ SMALL MOBILE (≤600px) */
+@media (max-width: 600px) {
+  .checkout-page {
+    width: 95%;
+    margin: 40px auto;
+  }
+
+  .checkout-title {
+    font-size: 22px;
+  }
+
+  .order-summary,
+  .checkout-form {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .summary-img {
+    width: 55px;
+    height: 55px;
+  }
+
+  .summary-name {
+    font-size: 14px;
+  }
+
+  .summary-price {
+    font-size: 13px;
+  }
+
+  .checkout-form h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .checkout-form input,
+  .checkout-form select {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .checkout-btn {
+    font-size: 14px;
+    padding: 10px 0;
+  }
+
+  .total-section h3 {
+    font-size: 17px;
+  }
+}
+
+/* ✅ VERY SMALL SCREEN (≤400px) */
+@media (max-width: 400px) {
+  .checkout-page {
+    width: 100%;
+    margin: 20px auto;
+  }
+
+  .checkout-container {
+    gap: 20px;
+  }
+
+  .checkout-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .summary-img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .summary-name {
+    font-size: 13px;
+  }
+
+  .summary-price {
+    font-size: 12px;
+  }
+
+  .checkout-form input,
+  .checkout-form select {
+    font-size: 12px;
+    padding: 7px;
+  }
+
+  .checkout-btn {
+    font-size: 13px;
+    padding: 9px 0;
+  }
+}
+
 </style>

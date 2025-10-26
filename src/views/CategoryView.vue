@@ -26,8 +26,8 @@
 import Navbar from "../components/NavBar.vue";
 import Footer from "../components/Footer.vue";
 import ProductCard from "../components/ProductCard.vue";
-import { ref, onMounted } from "vue";
-import { supabase } from "../lib/supabase";
+import { ref, onMounted, watch } from "vue";
+import axios from "axios";
 
 const props = defineProps({
   slug: String
@@ -35,15 +35,26 @@ const props = defineProps({
 
 const products = ref([]);
 
+// ✅ Fetch products from Node.js backend
 const fetchProducts = async () => {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("category_slug", props.slug);
-
-  if (error) console.error("Error loading products:", error.message);
-  else products.value = data;
+  try {
+    const res = await axios.get(`http://localhost:5000/products`);
+    // সব product থেকে category_slug অনুযায়ী filter
+    products.value = res.data.filter(
+      (p) => p.category_slug === props.slug
+    );
+  } catch (err) {
+    console.error("❌ Error loading products:", err.message);
+  }
 };
+
+// ✅ যখন slug পরিবর্তন হয় (route পরিবর্তন), তখন নতুনভাবে data আনবে
+watch(
+  () => props.slug,
+  () => {
+    fetchProducts();
+  }
+);
 
 onMounted(() => {
   fetchProducts();
@@ -55,7 +66,7 @@ onMounted(() => {
   margin: 0 10%;
   padding: 20px 0;
   box-sizing: border-box;
-   margin-top: 60px;
+  margin-top: 60px;
 }
 
 /* Category title */
@@ -85,8 +96,8 @@ onMounted(() => {
   .products-grid {
     grid-template-columns: repeat(2, 1fr); /* mobile: 2 per row */
   }
-  .home-wrapper{
-margin: 0 5%;
+  .home-wrapper {
+    margin: 0 5%;
   }
 }
 
