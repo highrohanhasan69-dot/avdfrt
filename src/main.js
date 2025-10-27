@@ -8,9 +8,24 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import { useCartStore } from "@/stores/cart";
 
-axios.defaults.baseURL = "http://localhost:5000/api";
+// 🟣 Detect environment (local or production)
+const isProduction = import.meta.env.PROD;
+
+// 🟢 Set baseURL automatically
+axios.defaults.baseURL = isProduction
+  ? "https://avado-backend.onrender.com/api" // 🌍 Live (Render backend)
+  : "http://localhost:5000/api";              // 💻 Local backend
+
 axios.defaults.withCredentials = true;
 
+// 🟢 Log which environment is active
+console.log(
+  `🔗 Using API base URL: ${axios.defaults.baseURL} (${isProduction ? "Production" : "Local"})`
+);
+
+// ----------------------------
+// Vue app setup
+// ----------------------------
 const app = createApp(App);
 const pinia = createPinia();
 
@@ -27,7 +42,7 @@ const initCart = async () => {
     const user = res.data.user || null;
     await cartStore.initUser(user?.id || null);
     console.log("✅ Cart initialized for:", user ? "User" : "Guest");
-  } catch {
+  } catch (err) {
     console.warn("⚠️ No user found, loading guest cart...");
     await cartStore.initUser(null);
   }
@@ -36,7 +51,7 @@ const initCart = async () => {
 // 🔹 Initialize once
 await initCart();
 
-// 🔹 Listen to login/logout
+// 🔹 Listen to login/logout events
 window.addEventListener("user-logged-in", async (e) => {
   const userId = e.detail.userId;
   await cartStore.initUser(userId);
