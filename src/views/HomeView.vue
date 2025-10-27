@@ -79,16 +79,14 @@
 
     <Footer />
   </div>
+
   <head>
     <meta charset="utf-8" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alice&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>AVADO</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
   </head>
 </template>
 
@@ -103,6 +101,12 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const placeholder = new URL('@/assets/no-image.png', import.meta.url).href;
 
+// 🔗 Detect environment and auto baseURL
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
 // ------------------ Banners ------------------
 const banners = ref([]);
 const currentIndex = ref(0);
@@ -110,10 +114,10 @@ let intervalId = null;
 
 const fetchBanners = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/banners");
+    const res = await axios.get(`${API_BASE}/banners`);
     banners.value = res.data;
   } catch (err) {
-    console.error(err);
+    console.error("❌ Banners fetch error:", err);
   }
 };
 
@@ -136,10 +140,10 @@ onUnmounted(() => clearInterval(intervalId));
 const categories = ref([]);
 const fetchCategories = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/categories");
+    const res = await axios.get(`${API_BASE}/categories`);
     categories.value = res.data;
   } catch (err) {
-    console.error(err);
+    console.error("❌ Categories fetch error:", err);
   }
 };
 onMounted(fetchCategories);
@@ -151,13 +155,13 @@ const allProducts = ref([]);
 
 const fetchProducts = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/products");
+    const res = await axios.get(`${API_BASE}/products`);
     const data = res.data || [];
     topProducts.value = data.filter(p => p.is_top_product);
     hotDeals.value = data.filter(p => p.is_hot_deal);
     allProducts.value = data;
   } catch (err) {
-    console.error(err);
+    console.error("❌ Products fetch error:", err);
   }
 };
 onMounted(fetchProducts);
