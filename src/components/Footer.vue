@@ -1,75 +1,50 @@
 <template>
   <footer class="footer">
-    <div class="footer-top">
-      <!-- Support Column -->
-      <div class="footer-column">
-        <h4>SUPPORT</h4>
+    <div class="footer-section">
+      <div class="footer-col">
+        <h3>Support</h3>
         <ul>
-          <li v-for="item in supportItems" :key="item.id">
-            <div class="contact-info">
-              <i class="phone-icon">📞</i>
-              <div class="info-details">
-                <span class="hours">{{ item.label }}</span>
-                <span class="number">{{ item.value }}</span>
-              </div>
-            </div>
+          <li v-for="link in supportLinks" :key="link.id">
+            <a :href="link.link" target="_blank">{{ link.text }}</a>
           </li>
         </ul>
       </div>
 
-      <!-- About Us Column (3 Sub-columns) -->
-      <div class="footer-column">
-        <h4>ABOUT US</h4>
-        <div class="about-us-row">
-          <ul v-for="(column, index) in aboutColumns" :key="index" class="sub-column">
-            <li v-for="item in column" :key="item.id">
-              <a :href="item.link" target="_blank">{{ item.label }}</a>
-            </li>
-          </ul>
-        </div>
+      <div class="footer-col">
+        <h3>About</h3>
+        <ul>
+          <li v-for="link in aboutLinks" :key="link.id">
+            <a :href="link.link" target="_blank">{{ link.text }}</a>
+          </li>
+        </ul>
       </div>
 
-      <!-- Stay Connected Column -->
-      <div class="footer-column">
-        <h4>STAY CONNECTED</h4>
-        <div class="address-box" v-if="stayConnected">
-          <h5>{{ stayConnected.name }}</h5>
-          <p>{{ stayConnected.address }}</p>
-          <p>Email: <a :href="`mailto:${stayConnected.email}`">{{ stayConnected.email }}</a></p>
-        </div>
-      </div>
-    </div>
-
-    <hr class="divider" />
-
-    <!-- App & Social Links -->
-    <div class="footer-middle">
-      <div class="footer-middle-left">
-        <p>{{ appText }}</p>
+      <div class="footer-col">
+        <h3>Stay Connected</h3>
+        <ul>
+          <li v-for="link in stayConnected" :key="link.id">
+            <a :href="link.link" target="_blank">{{ link.text }}</a>
+          </li>
+        </ul>
       </div>
 
-      <div class="footer-middle-center">
-        <div class="app-links">
-          <a v-for="app in appLinks" :key="app.id" :href="app.link" target="_blank">
-            <img :src="app.icon" alt="App Link" />
-          </a>
-        </div>
-      </div>
-
-      <div class="footer-middle-right">
-        <div class="social-links">
+      <div class="footer-col">
+        <h3>Follow Us</h3>
+        <div class="social-icons">
           <a v-for="social in socialLinks" :key="social.id" :href="social.link" target="_blank">
-            <img :src="social.icon" alt="Social Link" />
+            <i :class="social.icon"></i>
           </a>
         </div>
       </div>
     </div>
-
-    <hr class="divider" />
 
     <div class="footer-bottom">
-      <p>{{ copyright }}</p>
-      <p>Powered By: {{ poweredBy }}</p>
+      <p>{{ footerText }}</p>
+      <div class="app-links">
+        <a v-for="app in appLinks" :key="app.id" :href="app.link" target="_blank">
+          <i :class="app.icon"></i>
+        </a>
+      </div>
     </div>
   </footer>
 </template>
@@ -78,46 +53,38 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
-const API = "http://localhost:5000/api/footer";
+// 🔗 Auto-detect local or production API base
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
 
-// Footer state variables
-const supportItems = ref([]);
-const aboutColumns = ref([[], [], []]);
-const stayConnected = ref(null);
+// Reactive data
+const supportLinks = ref([]);
+const aboutLinks = ref([]);
+const stayConnected = ref([]);
 const appLinks = ref([]);
 const socialLinks = ref([]);
-const appText = ref("");
-const copyright = ref("");
-const poweredBy = ref("");
+const footerText = ref("");
 
-// Fetch all footer data
+// 🔹 Fetch footer data from backend
 const fetchFooterData = async () => {
   try {
-    const [supportRes, aboutRes, stayRes, appRes, socialRes, textRes] = await Promise.all([
-      axios.get(`${API}/support`),
-      axios.get(`${API}/about`),
-      axios.get(`${API}/stay-connected`),
-      axios.get(`${API}/app-links`),
-      axios.get(`${API}/social-links`),
-      axios.get(`${API}/texts`)
+    const [support, about, stay, app, social, text] = await Promise.all([
+      axios.get(`${API_BASE}/footer/support`),
+      axios.get(`${API_BASE}/footer/about`),
+      axios.get(`${API_BASE}/footer/stay-connected`),
+      axios.get(`${API_BASE}/footer/app-links`),
+      axios.get(`${API_BASE}/footer/social-links`),
+      axios.get(`${API_BASE}/footer/texts`),
     ]);
 
-    supportItems.value = supportRes.data || [];
-
-    aboutColumns.value = [[], [], []];
-    (aboutRes.data || []).forEach(item => {
-      aboutColumns.value[item.column_order - 1].push(item);
-    });
-
-    stayConnected.value = stayRes.data || null;
-    appLinks.value = appRes.data || [];
-    socialLinks.value = socialRes.data || [];
-
-    if (textRes.data) {
-      appText.value = textRes.data.app_text;
-      copyright.value = textRes.data.copyright;
-      poweredBy.value = textRes.data.powered_by;
-    }
+    supportLinks.value = support.data;
+    aboutLinks.value = about.data;
+    stayConnected.value = stay.data;
+    appLinks.value = app.data;
+    socialLinks.value = social.data;
+    footerText.value = text.data?.[0]?.text || "";
   } catch (err) {
     console.error("❌ Footer fetch error:", err);
   }
@@ -126,213 +93,71 @@ const fetchFooterData = async () => {
 onMounted(fetchFooterData);
 </script>
 
-
 <style scoped>
 .footer {
-  background-color: #0b1a28;
-  color: #c0c0c0;
-  padding: 40px 80px;
-  font-family: "Zalando Sans", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-  font-variation-settings:
-    "wdth" 100;
+  background: #111;
+  color: #eee;
+  padding: 40px 20px;
+  font-family: "Alice", serif;
 }
 
-.footer-top {
-  display: flex;
-  justify-content: space-between;
+.footer-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 30px;
-  flex-wrap: wrap;
-  padding-bottom: 20px;
+  margin-bottom: 30px;
 }
 
-.footer-column {
-  flex: 1;
-  min-width: 200px;
-}
-
-.footer-column h4 {
+.footer-col h3 {
   color: #fff;
-  font-size: 16px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #334455;
-  padding-bottom: 10px;
+  margin-bottom: 15px;
+  font-weight: bold;
 }
 
-.footer-column ul {
+.footer-col ul {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
 
-.footer-column li {
-  margin-bottom: 10px;
+.footer-col ul li {
+  margin: 8px 0;
 }
 
-.footer-column a {
-  color: #c0c0c0;
+.footer-col a {
+  color: #bbb;
   text-decoration: none;
-  font-size: 14px;
   transition: color 0.3s;
 }
 
-.footer-column a:hover {
-  color: #fff;
+.footer-col a:hover {
+  color: #8e2de2;
 }
 
-.contact-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  border: 1px solid #334455;
-  padding: 15px;
-  border-radius: 8px;
+.social-icons a {
+  margin-right: 10px;
+  color: #ccc;
+  font-size: 20px;
+  transition: color 0.3s;
 }
 
-.info-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.info-details .hours,
-.info-details .text {
-  font-size: 12px;
-  color: #888;
-}
-
-.info-details .number {
-  font-size: 18px;
-  font-weight: bold;
-  color: #fff;
-}
-
-.about-us-row {
-  display: flex;
-  gap: 40px;
-}
-
-.about-us-row .sub-column {
-  flex: 1;
-}
-
-.address-box {
-  background-color: #1a2a38;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.address-box h5 {
-  color: #fff;
-  margin-top: 0;
-  font-size: 16px;
-}
-
-.address-box p {
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 10px;
-}
-
-.address-box a {
-  color: #c0c0c0;
-  text-decoration: underline;
-}
-
-.divider {
-  border: none;
-  border-top: 1px solid #334455;
-  margin: 20px 0;
-}
-
-/* Footer Middle */
-.footer-middle {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 10px 0;
-  text-align: center;
-}
-
-.footer-middle-left,
-.footer-middle-center,
-.footer-middle-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.footer-middle-left {
-  justify-content: flex-start;
-  flex: 1;
-}
-
-.footer-middle-center {
-  justify-content: center;
-  flex: 1;
-}
-
-.footer-middle-right {
-  justify-content: flex-end;
-  flex: 1;
-}
-
-.app-links img {
-  height: 120px;
-  margin: 0 10px;
-  transition: transform 0.3s;
-}
-
-.app-links img:hover {
-  transform: scale(1.05);
-}
-
-.social-links img {
-  height: 36px;
-  margin: 0 10px;
-  transition: transform 0.3s;
-}
-
-.social-links img:hover {
-  transform: scale(1.15);
+.social-icons a:hover {
+  color: #8e2de2;
 }
 
 .footer-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: #888;
+  border-top: 1px solid #333;
+  padding-top: 20px;
+  text-align: center;
+  font-size: 14px;
 }
 
-@media (max-width: 768px) {
-  .footer {
-    padding: 20px;
-  }
-  .footer-top {
-    flex-direction: column;
-  }
-  .footer-middle {
-    flex-direction: column;
-    gap: 20px;
-  }
-  .footer-middle-left,
-  .footer-middle-center,
-  .footer-middle-right {
-    justify-content: center;
-    flex: none;
-  }
-  .footer-bottom {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
-  .about-us-row {
-    flex-direction: column;
-    gap: 20px;
-  }
+.app-links a {
+  margin: 0 8px;
+  color: #bbb;
+  font-size: 20px;
+}
+
+.app-links a:hover {
+  color: #8e2de2;
 }
 </style>
