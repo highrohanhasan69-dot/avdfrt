@@ -77,12 +77,18 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
+// ✅ Auto detect environment (Local + Production)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+console.log("🔗 Using API base:", API_BASE);
+
 const banners = ref([]);
 const newFile = ref(null);
 const newFilePreview = ref(null);
 const newBannerLink = ref("");
-
-const API_URL = "http://localhost:5000/banners";
 
 // File select
 const onFileChange = (e) => {
@@ -93,10 +99,10 @@ const onFileChange = (e) => {
 // Fetch banners
 const fetchBanners = async () => {
   try {
-    const res = await axios.get(API_URL);
+    const res = await axios.get(`${API_BASE}/banners`);
     banners.value = res.data;
   } catch (err) {
-    console.error(err);
+    console.error("❌ Fetch banners error:", err);
   }
 };
 
@@ -109,33 +115,30 @@ const addBanner = async () => {
   formData.append("link", newBannerLink.value);
 
   try {
-    await axios.post(API_URL, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+    await axios.post(`${API_BASE}/banners`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
     newFile.value = null;
     newFilePreview.value = null;
     newBannerLink.value = "";
-    fetchBanners();
+    await fetchBanners();
   } catch (err) {
-    console.error(err);
+    console.error("❌ Add banner error:", err);
   }
 };
 
 // Delete banner
 const deleteBanner = async (id) => {
   try {
-    await axios.delete(`${API_URL}/${id}`);
-    fetchBanners();
+    await axios.delete(`${API_BASE}/banners/${id}`);
+    await fetchBanners();
   } catch (err) {
-    console.error(err);
+    console.error("❌ Delete banner error:", err);
   }
 };
 
-onMounted(() => {
-  fetchBanners();
-});
+onMounted(fetchBanners);
 </script>
-
 
 <style scoped>
 .banner-manager {
@@ -151,7 +154,6 @@ form {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.3s ease;
 }
-
 form:hover {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
@@ -165,7 +167,6 @@ input[type="text"] {
   width: 100%;
   transition: all 0.3s ease;
 }
-
 input[type="file"]:focus,
 input[type="text"]:focus {
   outline: none;
@@ -181,7 +182,6 @@ form div img {
   width: 100%;
   transition: transform 0.3s ease;
 }
-
 form div img:hover {
   transform: scale(1.05);
 }
@@ -196,7 +196,6 @@ button[type="submit"] {
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
-
 button[type="submit"]:hover {
   background: linear-gradient(90deg, #6d28d9, #4c1d95);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -210,7 +209,6 @@ button[type="submit"]:hover {
   box-shadow: 0 4px 10px rgba(0,0,0,0.06);
   transition: all 0.3s ease;
 }
-
 .banner-item:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.12);
@@ -223,7 +221,6 @@ button[type="submit"]:hover {
   object-fit: cover;
   transition: transform 0.3s ease;
 }
-
 .banner-item img:hover {
   transform: scale(1.05);
 }
@@ -239,7 +236,6 @@ button[type="submit"]:hover {
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-
 .banner-item button:hover {
   background-color: #dc2626;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -251,7 +247,6 @@ button[type="submit"]:hover {
   color: #4b5563;
   word-break: break-word;
 }
-
 h2 {
   font-size: 1.875rem;
   font-weight: 700;
