@@ -130,6 +130,15 @@ const statusFilter = ref("");
 
 const placeholder = new URL("@/assets/no-image.png", import.meta.url).href;
 
+// ✅ Auto-detect API base URL
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
+
 // helpers
 const shortId = (id) => String(id).slice(0, 8);
 const num = (v) => Number(v).toFixed(2);
@@ -146,9 +155,7 @@ const formatDate = (d) =>
 const fetchOrders = async () => {
   try {
     loading.value = true;
-    const res = await axios.get("http://localhost:5000/api/checkout", {
-      withCredentials: true,
-    });
+    const res = await axios.get("/checkout", { withCredentials: true });
 
     // Backend returns items/customer as JSON; keep safe:
     orders.value = (res.data?.orders || []).map((o) => ({
@@ -184,6 +191,7 @@ const filteredOrders = computed(() => {
 
 onMounted(fetchOrders);
 </script>
+
 
 <style scoped>
 /* Page Frame */

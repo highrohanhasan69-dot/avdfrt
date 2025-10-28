@@ -106,6 +106,15 @@ import axios from "axios";
 import { ref, computed, onMounted } from "vue";
 import { useCart } from "@/composables/useCart";
 
+// 🟣 Auto detect backend base URL
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
+
 const { cart, fetchCart } = useCart();
 
 const customer = ref({
@@ -129,11 +138,13 @@ const discountedPrice = (item) => {
 
 // ✅ Total Price (discount respected)
 const totalPrice = computed(() =>
-  cart.value.reduce(
-    (sum, item) =>
-      sum + discountedPrice(item) * (item.quantity || 1),
-    0
-  ).toFixed(2)
+  cart.value
+    .reduce(
+      (sum, item) =>
+        sum + discountedPrice(item) * (item.quantity || 1),
+      0
+    )
+    .toFixed(2)
 );
 
 // ✅ Place Order Function
@@ -158,9 +169,7 @@ const placeOrder = async () => {
       payment_method: paymentMethod.value,
     };
 
-    const res = await axios.post("http://localhost:5000/api/checkout", payload, {
-      withCredentials: true,
-    });
+    const res = await axios.post("/checkout", payload, { withCredentials: true });
 
     if (res.data.success) {
       alert("✅ Order placed successfully!");
@@ -184,6 +193,8 @@ const placeOrder = async () => {
 
 onMounted(fetchCart);
 </script>
+
+
 
 <style scoped>
 .checkout-page {
