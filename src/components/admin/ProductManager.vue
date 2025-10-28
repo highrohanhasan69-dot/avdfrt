@@ -1,176 +1,12 @@
-<template>
-  <div class="product-manager">
-    <h2>Add Product</h2>
-
-    <!-- ✅ Product Add Form -->
-    <form @submit.prevent="addProduct" class="product-form">
-      <!-- Basic Info -->
-      <div class="form-group">
-        <input v-model="product.name" placeholder="Product Name" required />
-      </div>
-      <div class="form-group">
-        <input
-          v-model.number="product.price"
-          type="number"
-          placeholder="Price"
-          required
-        />
-      </div>
-      <div class="form-group">
-        <textarea v-model="product.description" placeholder="Description"></textarea>
-      </div>
-
-      <!-- Category dropdown -->
-      <div class="form-group">
-        <select v-model="product.category_slug" required>
-          <option value="">Select Category</option>
-          <option
-            v-for="cat in categories"
-            :key="cat.id"
-            :value="cat.slug"
-          >
-            {{ cat.slug }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Primary Image Upload -->
-      <div class="form-group">
-        <label>Primary Image:</label>
-        <input type="file" @change="uploadImage($event, 'image_url')" />
-        <span v-if="product.image_url" class="uploaded">Uploaded ✅</span>
-      </div>
-
-      <!-- Secondary Image Upload -->
-      <div class="form-group">
-        <label>Secondary Image:</label>
-        <input type="file" @change="uploadImage($event, 'secondary_image_url')" />
-        <span v-if="product.secondary_image_url" class="uploaded">Uploaded ✅</span>
-      </div>
-
-      <!-- Flags -->
-      <div class="form-group checkbox-group">
-        <label
-          ><input
-            type="checkbox"
-            v-model="product.is_top_product"
-          />
-          Top Product</label
-        >
-        <label
-          ><input
-            type="checkbox"
-            v-model="product.is_hot_deal"
-          />
-          Hot Deal</label
-        >
-      </div>
-
-      <!-- Discount -->
-      <div class="form-group discount-group">
-        <input
-          v-model.number="product.discount_percent"
-          type="number"
-          placeholder="Discount (%)"
-        />
-        <input v-model="product.offer_end_date" type="datetime-local" />
-      </div>
-
-      <!-- Variants -->
-      <div
-        v-for="(variant, vIndex) in variants"
-        :key="vIndex"
-        class="variant-box"
-      >
-        <h3>
-          {{ variant.level === 1 ? "Primary Variant" : "Secondary Variant" }}
-        </h3>
-        <div class="form-group">
-          <input v-model="variant.name" placeholder="Variant Name" />
-        </div>
-
-        <!-- Variant Options -->
-        <div
-          v-for="(option, oIndex) in variant.options"
-          :key="oIndex"
-          class="option-box"
-        >
-          <div class="form-group">
-            <input v-model="option.option_name" placeholder="Option Name" />
-            <input
-              v-model.number="option.option_price"
-              type="number"
-              placeholder="Option Price"
-            />
-            <input type="file" @change="uploadOptionImage($event, vIndex, oIndex)" />
-            <span v-if="option.option_image_url" class="uploaded">Uploaded ✅</span>
-          </div>
-        </div>
-
-        <button type="button" class="btn-secondary" @click="addOption(vIndex)">
-          + Add Option
-        </button>
-      </div>
-
-      <div class="variant-buttons">
-        <button type="button" class="btn-primary" @click="addVariant(1)">
-          + Add Primary Variant
-        </button>
-        <button type="button" class="btn-primary" @click="addVariant(2)">
-          + Add Secondary Variant
-        </button>
-      </div>
-
-      <button type="submit" class="btn-submit">
-        {{ editingId ? "Update Product" : "Save Product" }}
-      </button>
-    </form>
-
-    <!-- ✅ Product List Table -->
-    <div class="product-list">
-      <h2>All Products</h2>
-
-      <div v-if="loading" class="loading">Loading products...</div>
-      <div v-else-if="products.length === 0" class="no-products">
-        No products found.
-      </div>
-
-      <table v-else class="product-table">
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Price (৳)</th>
-            <th>Category</th>
-            <th>Discount</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="prod in products" :key="prod.id">
-            <td><img :src="prod.image_url" class="thumb" alt="product" /></td>
-            <td>{{ prod.name }}</td>
-            <td>{{ prod.price }}</td>
-            <td>{{ prod.category_slug }}</td>
-            <td>{{ prod.discount_percent || 0 }}%</td>
-            <td>
-              <button class="btn-edit" @click="editProduct(prod)">✏️ Edit</button>
-              <button class="btn-delete" @click="deleteProduct(prod.id)">
-                🗑️ Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</template>
-
 <script>
 export default {
   name: "ProductManager",
   data() {
     return {
+      API_BASE:
+        window.location.hostname === "localhost"
+          ? "http://localhost:5000"
+          : "https://avado-backend.onrender.com",
       categories: [],
       products: [],
       loading: false,
@@ -197,7 +33,7 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const res = await fetch("http://localhost:5000/categories");
+        const res = await fetch(`${this.API_BASE}/categories`);
         this.categories = await res.json();
       } catch (err) {
         console.error("Error fetching categories:", err);
@@ -207,7 +43,7 @@ export default {
     async fetchProducts() {
       this.loading = true;
       try {
-        const res = await fetch("http://localhost:5000/products");
+        const res = await fetch(`${this.API_BASE}/products`);
         this.products = await res.json();
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -222,7 +58,7 @@ export default {
       const formData = new FormData();
       formData.append("image", file);
       try {
-        const res = await fetch("http://localhost:5000/products/upload", {
+        const res = await fetch(`${this.API_BASE}/products/upload`, {
           method: "POST",
           body: formData,
         });
@@ -239,7 +75,7 @@ export default {
       const formData = new FormData();
       formData.append("image", file);
       try {
-        const res = await fetch("http://localhost:5000/products/upload", {
+        const res = await fetch(`${this.API_BASE}/products/upload`, {
           method: "POST",
           body: formData,
         });
@@ -264,8 +100,8 @@ export default {
 
     async addProduct() {
       const url = this.editingId
-        ? `http://localhost:5000/products/${this.editingId}`
-        : "http://localhost:5000/products";
+        ? `${this.API_BASE}/products/${this.editingId}`
+        : `${this.API_BASE}/products`;
       const method = this.editingId ? "PUT" : "POST";
 
       try {
@@ -301,9 +137,8 @@ export default {
 
     async deleteProduct(id) {
       if (!confirm("Are you sure you want to delete this product?")) return;
-
       try {
-        const res = await fetch(`http://localhost:5000/products/${id}`, {
+        const res = await fetch(`${this.API_BASE}/products/${id}`, {
           method: "DELETE",
         });
         if (res.ok) {
@@ -337,6 +172,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .product-manager {
