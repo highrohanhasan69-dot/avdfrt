@@ -1,13 +1,4 @@
 <template>
-  <head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap"
-    rel="stylesheet"
-  />
-</head>
-
   <div class="product-card" @click="goToProductPage">
     <div class="image-box">
       <img :src="product.image_url || placeholder" :alt="product.name" />
@@ -41,39 +32,47 @@ import { useRouter } from "vue-router";
 import { useCartStore } from "@/stores/cart";
 
 const placeholder = new URL("@/assets/no-image.png", import.meta.url).href;
-
-const props = defineProps({
-  product: { type: Object, required: true },
-});
-
+const props = defineProps({ product: Object });
 const router = useRouter();
 const cartStore = useCartStore();
 
-// ✅ Navigate to product details
+// ✅ Dynamic API
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+// ✅ Navigate to product page
 const goToProductPage = () => {
   if (props.product.id) router.push(`/product/${props.product.id}`);
 };
 
-// ✅ Final discounted price
+// ✅ Discounted price
 const finalPrice = computed(() => {
   const price = Number(props.product.price) || 0;
   const discount = Number(props.product.discount_percent) || 0;
   return discount ? (price - (price * discount) / 100).toFixed(2) : price.toFixed(2);
 });
 
-// ✅ Add to Cart (instant update)
+// ✅ Add to cart
 const handleAddToCart = async () => {
   try {
-    await cartStore.addToCart(props.product.id, 1);
+    await fetch(`${API_BASE}/api/cart/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ product_id: props.product.id, quantity: 1 }),
+    });
+    await cartStore.fetchCart();
   } catch (err) {
     console.error("❌ Add to cart failed:", err);
   }
 };
 
-// ✅ Buy Now
+// ✅ Buy now
 const handleBuyNow = async () => {
   try {
-    await cartStore.addToCart(props.product.id, 1);
+    await handleAddToCart();
     router.push("/checkout");
   } catch (err) {
     console.error("❌ Buy now failed:", err);

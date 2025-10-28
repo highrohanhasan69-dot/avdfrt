@@ -31,10 +31,7 @@
             </div>
           </div>
 
-          <!-- ✅ Remove Button (visible now) -->
-          <button class="remove" @click="remove(item.id)" title="Remove item">
-            🗑
-          </button>
+          <button class="remove" @click="remove(item.id)" title="Remove item">🗑</button>
         </div>
 
         <!-- ✅ Subtotal -->
@@ -51,10 +48,7 @@
       </section>
 
       <section v-else class="empty-box">
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png"
-          alt="Empty"
-        />
+        <img src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png" alt="Empty" />
         <p>Your cart is empty 🛍️</p>
       </section>
     </div>
@@ -69,6 +63,12 @@ import { useCart } from "@/composables/useCart";
 const emit = defineEmits(["close"]);
 const { cart, loading, fetchCart, addToCart } = useCart();
 const router = useRouter();
+
+// ✅ Dynamic API base
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
 
 onMounted(fetchCart);
 
@@ -88,15 +88,16 @@ const totalPrice = computed(() =>
   )
 );
 
-// ✅ Increase/Decrease
+// ✅ Increase
 const increase = async (item) => {
   await addToCart(item.product_id, 1);
   await fetchCart();
 };
 
+// ✅ Decrease
 const decrease = async (item) => {
   if (item.quantity > 1) {
-    await fetch(`http://localhost:5000/api/cart/update/${item.id}`, {
+    await fetch(`${API_BASE}/api/cart/update/${item.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quantity: item.quantity - 1 }),
@@ -106,10 +107,10 @@ const decrease = async (item) => {
   }
 };
 
-// ✅ Remove Product from Cart (Backend)
+// ✅ Remove Product
 const remove = async (id) => {
   try {
-    const res = await fetch(`http://localhost:5000/api/cart/remove/${id}`, {
+    const res = await fetch(`${API_BASE}/api/cart/remove/${id}`, {
       method: "DELETE",
       credentials: "include",
     });
@@ -128,6 +129,7 @@ const goCheckout = () => {
   router.push("/checkout");
 };
 </script>
+
 
 <style scoped>
 /* 🔹 Overlay */
