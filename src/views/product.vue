@@ -139,6 +139,12 @@ const router = useRouter();
 const route = useRoute();
 const { addToCart: addToCartApi } = useCart(); // alias নাম দিলাম
 
+// ✅ Auto-detect API Base (Render + Localhost)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
 // ---------- Product States ----------
 const productId = ref(route.params.id);
 const product = ref({});
@@ -164,10 +170,8 @@ const secondaryImages = computed(() => {
 
 // ---------- Display Image ----------
 const displayImage = computed(() => {
-  // যদি override থাকে, সেটি প্রাধান্য পাবে
   if (displayImageOverride.value) return displayImageOverride.value;
 
-  // যদি কোনো variant select করা থাকে এবং option image থাকে
   for (let v of variants.value) {
     const optId = selectedOptions.value[v.id];
     if (!optId) continue;
@@ -175,7 +179,6 @@ const displayImage = computed(() => {
     if (opt?.option_image_url) return opt.option_image_url;
   }
 
-  // fallback
   return product.value.image_url || "/images/no-image.png";
 });
 
@@ -207,22 +210,19 @@ const displayPriceDiscounted = computed(() => {
 const fetchProduct = async () => {
   if (!productId.value) return;
   try {
-    const { data } = await axios.get(
-      `http://localhost:5000/products/${productId.value}`
-    );
+    const { data } = await axios.get(`${API_BASE}/products/${productId.value}`);
     product.value = data || {};
     variants.value = data?.variants || [];
 
-    // initialize selected options
     variants.value.forEach((v) => {
       selectedOptions.value[v.id] = "";
     });
 
     displayImageOverride.value = null;
 
-    // Fetch related products
-    const resAll = await axios.get("http://localhost:5000/products");
+    const resAll = await axios.get(`${API_BASE}/products`);
     allProducts.value = resAll.data || [];
+
     if (product.value.category_slug) {
       relatedProducts.value = allProducts.value
         .filter(
@@ -246,7 +246,7 @@ const fetchProduct = async () => {
 
 // ---------- Update Handlers ----------
 const updateDisplay = () => {
-  displayImageOverride.value = null; // যাতে computed আবার update হয়
+  displayImageOverride.value = null;
 };
 
 const handleThumbClick = (img) => {
