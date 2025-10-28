@@ -136,7 +136,6 @@
     <CartDrawer v-if="cartOpen" @close="toggleCart" />
   </div>
 </template>
-
 <script setup>
 import homeIcon from "@/assets/icons/icons8-home-50.png";
 import giftIcon from "@/assets/icons/gift.svg";
@@ -155,15 +154,14 @@ const cartStore = useCartStore();
 const { itemCount } = storeToRefs(cartStore);
 
 // ✅ Auto-detect API base (local + production)
-const API_BASE =
+axios.defaults.baseURL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000/api"
     : "https://avado-backend.onrender.com/api";
 
-axios.defaults.baseURL = API_BASE;
-axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true; // ✅ Cookie পাঠানোর জন্য
 
-console.log("🔗 Using API base URL:", API_BASE);
+console.log("🔗 Using API base URL:", axios.defaults.baseURL);
 
 const currentUser = ref(null);
 const cartOpen = ref(false);
@@ -174,9 +172,10 @@ const showSuggestions = ref(false);
 const isScrolled = ref(false);
 const animateCart = ref(false);
 
+// ✅ Corrected getUser (no extra /api)
 const getUser = async () => {
   try {
-    const res = await axios.get(`${API_BASE}/auth/current-user`);
+    const res = await axios.get("/auth/current-user"); // ✅ fixed
     currentUser.value = res.data.user;
   } catch {
     currentUser.value = null;
@@ -184,6 +183,7 @@ const getUser = async () => {
 };
 onMounted(getUser);
 
+// ✅ Search products (use full backend base without /api)
 const fetchSuggestions = async () => {
   const query = searchQuery.value.trim();
   if (!query) {
@@ -192,7 +192,13 @@ const fetchSuggestions = async () => {
     return;
   }
   try {
-    const res = await axios.get(`${API_BASE.replace("/api", "")}/products/search?q=${encodeURIComponent(query)}`);
+    const base =
+      window.location.hostname === "localhost"
+        ? "http://localhost:5000"
+        : "https://avado-backend.onrender.com";
+    const res = await axios.get(
+      `${base}/products/search?q=${encodeURIComponent(query)}`
+    );
     suggestions.value = res.data || [];
     showSuggestions.value = true;
   } catch (err) {
@@ -200,6 +206,7 @@ const fetchSuggestions = async () => {
   }
 };
 
+// ✅ Navigation Functions
 const goToProduct = (id) => {
   showSuggestions.value = false;
   mobileSearchOpen.value = false;
@@ -217,8 +224,13 @@ const goToSearchPage = () => {
 const goHome = () => router.push("/");
 const goOrders = () => router.push("/orders");
 const goHotDeals = () => router.push("/hot-deal");
-const goAccount = () =>
-  currentUser.value ? router.push("/account") : router.push("/login");
+
+// ✅ Account redirect logic (fix)
+const goAccount = () => {
+  if (currentUser.value) router.push("/account");
+  else router.push("/login");
+};
+
 const toggleCart = () => (cartOpen.value = !cartOpen.value);
 const toggleMobileSearch = () =>
   (mobileSearchOpen.value = !mobileSearchOpen.value);
@@ -232,6 +244,7 @@ watch(itemCount, () => {
   setTimeout(() => (animateCart.value = false), 400);
 });
 </script>
+
 
 
 <style scoped>
