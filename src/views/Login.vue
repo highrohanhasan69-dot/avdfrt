@@ -25,20 +25,32 @@ const router = useRouter();
 const loginInput = ref("");
 const password = ref("");
 
+// ✅ Auto-detect local or Cloudflare API base
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
+
+console.log("🔗 Using API base URL:", API_BASE);
+
+// ✅ Handle Login
 const handleLogin = async () => {
   try {
-    const res = await axios.post("http://localhost:5000/api/auth/login", {
+    const res = await axios.post(`${API_BASE}/auth/login`, {
       loginInput: loginInput.value,
-      password: password.value
-    }, { withCredentials: true });
-    alert(res.data.message);
+      password: password.value,
+    });
+    alert(res.data.message || "Login successful!");
     router.push("/");
   } catch (err) {
+    console.error("❌ Login error:", err);
     alert(err.response?.data?.message || "Login failed");
   }
 };
 </script>
-
 
 <style scoped>
 .login-container {
@@ -117,13 +129,13 @@ const handleLogin = async () => {
 .signup-text a:hover {
   color: #4A00E0;
 }
+
 @media (max-width: 768px) {
-
-
-  .navbar{
+  .navbar {
     margin-bottom: 110px;
   }
 }
+
 /* 🟣 Responsive */
 @media (max-width: 500px) {
   .login-container {

@@ -24,16 +24,25 @@ import axios from "axios";
 const user = ref(null);
 const router = useRouter();
 
-// ✅ Axios default to send cookies
+// ✅ Auto-detect local or cloudflare API base
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
+
+// ✅ Axios setup for cookies & base URL
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = API_BASE;
+
+console.log("🔗 Using API base URL:", API_BASE);
 
 // ✅ Load user info from backend
 const getUser = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/auth/current-user");
+    const res = await axios.get(`${API_BASE}/auth/current-user`);
     user.value = res.data.user || null;
   } catch (err) {
-    console.error("Error fetching user:", err);
+    console.error("❌ Error fetching user:", err);
     user.value = null;
   }
 };
@@ -41,17 +50,15 @@ const getUser = async () => {
 // ✅ Logout user via backend
 const handleLogout = async () => {
   try {
-    await axios.post("http://localhost:5000/api/auth/logout"); // 🔹 correct URL
+    await axios.post(`${API_BASE}/auth/logout`);
     user.value = null;
     router.push("/login");
   } catch (err) {
-    console.error("Logout error:", err);
+    console.error("❌ Logout error:", err);
   }
 };
 
-onMounted(() => {
-  getUser();
-});
+onMounted(getUser);
 </script>
 
 <style scoped>
