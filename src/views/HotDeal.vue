@@ -36,7 +36,16 @@ import Navbar from "../components/NavBar.vue";
 import ProductCard from "../components/ProductCard.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
-import axios from "axios"; // ✅ Replaced supabase with axios (Node.js backend)
+import axios from "axios";
+
+// 🟣 Auto-detect backend (Local + Hosted)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
 
 // ✅ Hot Deals Data
 const hotDeals = ref([]);
@@ -44,12 +53,11 @@ const hotDeals = ref([]);
 // ✅ Fetch from Node.js backend
 const fetchHotDeals = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/products");
+    const res = await axios.get("/products");
     const allProducts = res.data || [];
 
     // 🔥 Filter products that have is_hot_deal = true
-    hotDeals.value = allProducts.filter(p => p.is_hot_deal === true);
-
+    hotDeals.value = allProducts.filter((p) => p.is_hot_deal === true);
   } catch (err) {
     console.error("❌ Failed to fetch hot deals:", err);
   }

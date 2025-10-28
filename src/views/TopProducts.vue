@@ -34,7 +34,16 @@ import Navbar from "../components/NavBar.vue";
 import ProductCard from "../components/ProductCard.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
-import axios from "axios"; // ✅ Replaced supabase with axios (Node.js backend)
+import axios from "axios";
+
+// 🟣 Auto-detect backend (local or hosted)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
 
 // ✅ Reactive list for top products
 const topProducts = ref([]);
@@ -42,12 +51,13 @@ const topProducts = ref([]);
 // ✅ Fetch from Node.js backend
 const fetchTopProducts = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/products");
+    const res = await axios.get("/products");
     const allProducts = res.data || [];
 
     // ⭐ Filter only top products
-    topProducts.value = allProducts.filter(p => p.is_top_product === true);
-
+    topProducts.value = allProducts.filter(
+      (p) => p.is_top_product === true
+    );
   } catch (err) {
     console.error("❌ Failed to fetch top products:", err);
   }

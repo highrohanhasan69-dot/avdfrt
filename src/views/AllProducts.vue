@@ -34,15 +34,24 @@ import Navbar from "../components/NavBar.vue";
 import ProductCard from "../components/ProductCard.vue";
 import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
-import axios from "axios"; // ✅ Node.js backend data fetcher
+import axios from "axios";
+
+// 🟣 Auto-detect backend (Local + Render)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
 
 // ✅ Reactive product list
 const allProducts = ref([]);
 
-// ✅ Fetch from Node.js backend
+// ✅ Fetch all products from Node.js backend
 const fetchAllProducts = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/products");
+    const res = await axios.get("/products");
     allProducts.value = res.data || [];
   } catch (err) {
     console.error("❌ Failed to fetch all products:", err);
