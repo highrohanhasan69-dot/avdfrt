@@ -1,7 +1,14 @@
+// composables/useCart.js
 import axios from "axios";
 import { ref } from "vue";
 
-axios.defaults.baseURL = "http://localhost:5000/api";
+// ✅ Auto-detect Base URL (Local + Production)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
+
+axios.defaults.baseURL = API_BASE;
 axios.defaults.withCredentials = true;
 
 export function useCart() {
