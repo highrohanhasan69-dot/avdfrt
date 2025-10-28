@@ -148,105 +148,187 @@ onMounted(fetchCategories);
 </script>
 
 <style scoped>
+/* ---------- Root Layout ---------- */
 .category-manager {
   font-family: "Zalando Sans", "Poppins", sans-serif;
-  background: linear-gradient(135deg, #f9f8ff, #f3ecff);
+  background: linear-gradient(135deg, #f7f3ff, #f1ebff);
   min-height: 100vh;
-  border-radius: 16px;
+  padding-bottom: 4rem;
 }
 
+/* ---------- Heading ---------- */
 h2 {
-  background: linear-gradient(to right, #4a00e0, #8e2de2);
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: 1px;
+  font-size: 2.3rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  letter-spacing: 0.5px;
 }
 
+/* ---------- Add Form ---------- */
 form {
   background: #fff;
-  border: 2px solid #f3e8ff;
+  border: 1.5px solid #e9d5ff;
+  border-radius: 18px;
+  padding: 1.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 1.5rem;
+  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.08);
   transition: all 0.3s ease;
 }
 form:hover {
-  border-color: #a855f7;
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
+  border-color: #c084fc;
+  box-shadow: 0 4px 25px rgba(147, 51, 234, 0.15);
+}
+
+label {
+  color: #4b0082;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 input[type="file"],
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+input[type="text"] {
   border: 1.5px solid #d6bcfa;
-  transition: all 0.2s ease;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  color: #333;
+  transition: all 0.25s ease;
 }
 input:focus {
   border-color: #8e2de2;
-  box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.15);
+  box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.12);
+  outline: none;
 }
 
+/* ---------- Image Preview ---------- */
+.mt-3 {
+  background: #faf5ff;
+  border: 2px solid #ede9fe;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.mt-3 img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Add Button ---------- */
 button[type="submit"] {
-  background: linear-gradient(to right, #6a00f4, #9d34e6);
-  box-shadow: 0 4px 10px rgba(134, 32, 230, 0.4);
+  background: linear-gradient(90deg, #6a00f4, #9d34e6);
+  padding: 10px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(134, 32, 230, 0.35);
   transition: all 0.3s ease;
 }
 button[type="submit"]:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(134, 32, 230, 0.6);
+  box-shadow: 0 6px 18px rgba(134, 32, 230, 0.45);
 }
 
-/* Category Cards */
+/* ---------- Category Cards Grid ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
 .grid > div {
-  border: 2px solid #f3e8ff;
-  background: white;
+  background: #fff;
+  border-radius: 18px;
+  border: 1.5px solid #ede9fe;
+  box-shadow: 0 3px 12px rgba(147, 51, 234, 0.1);
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 .grid > div:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(147, 51, 234, 0.25);
   border-color: #c084fc;
-  box-shadow: 0 6px 20px rgba(147, 51, 234, 0.2);
-  transform: translateY(-4px);
 }
 
+/* ---------- Image Container ---------- */
+.grid .overflow-hidden {
+  height: 220px;
+  position: relative;
+}
 .grid img {
-  border-bottom: 2px solid #f3e8ff;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.grid img:hover {
+  transform: scale(1.08);
 }
 
+/* ---------- Card Details ---------- */
 .grid p {
   font-weight: 600;
-  color: #4b0082;
+  font-size: 1.1rem;
+  color: #4a008e;
+  text-align: center;
+  margin-top: 0.4rem;
   letter-spacing: 0.3px;
 }
 
+/* ---------- Delete Button ---------- */
 .grid button {
-  background: linear-gradient(to right, #ff416c, #ff4b2b);
-  transition: all 0.3s ease;
+  background: linear-gradient(90deg, #ff416c, #ff4b2b);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 0;
+  width: 100%;
+  margin-top: 0.6rem;
+  box-shadow: 0 3px 10px rgba(255, 75, 43, 0.3);
+  transition: all 0.25s ease;
 }
 .grid button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 75, 43, 0.45);
 }
 
-/* Empty State */
+/* ---------- Empty State ---------- */
 p.text-center {
   font-style: italic;
   color: #7e22ce;
+  font-weight: 500;
+  margin-top: 2rem;
 }
 
-/* Responsive tweaks */
+/* ---------- Responsive Design ---------- */
 @media (max-width: 768px) {
   .category-manager {
-    padding: 1.5rem;
+    padding: 1.2rem;
   }
 
   form {
-    padding: 1rem;
+    flex-direction: column;
+    padding: 1.2rem;
   }
 
   button[type="submit"] {
     width: 100%;
   }
 
-  .grid > div {
-    border-radius: 14px;
+  .grid .overflow-hidden {
+    height: 180px;
   }
 }
 </style>
