@@ -148,140 +148,105 @@ onMounted(fetchCategories);
 </script>
 
 <style scoped>
-/* Container */
 .category-manager {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Zalando Sans", "Poppins", sans-serif;
+  background: linear-gradient(135deg, #f9f8ff, #f3ecff);
+  min-height: 100vh;
+  border-radius: 16px;
 }
 
-/* Title */
-.title {
-  font-size: 28px;
+h2 {
+  background: linear-gradient(to right, #4a00e0, #8e2de2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+
+form {
+  background: #fff;
+  border: 2px solid #f3e8ff;
+  transition: all 0.3s ease;
+}
+form:hover {
+  border-color: #a855f7;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
+}
+
+input[type="file"],
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  border: 1.5px solid #d6bcfa;
+  transition: all 0.2s ease;
+}
+input:focus {
+  border-color: #8e2de2;
+  box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.15);
+}
+
+button[type="submit"] {
+  background: linear-gradient(to right, #6a00f4, #9d34e6);
+  box-shadow: 0 4px 10px rgba(134, 32, 230, 0.4);
+  transition: all 0.3s ease;
+}
+button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(134, 32, 230, 0.6);
+}
+
+/* Category Cards */
+.grid > div {
+  border: 2px solid #f3e8ff;
+  background: white;
+  transition: all 0.3s ease;
+}
+.grid > div:hover {
+  border-color: #c084fc;
+  box-shadow: 0 6px 20px rgba(147, 51, 234, 0.2);
+  transform: translateY(-4px);
+}
+
+.grid img {
+  border-bottom: 2px solid #f3e8ff;
+}
+
+.grid p {
   font-weight: 600;
-  margin-bottom: 20px;
-  color: #4a00e0;
-  text-align: center;
+  color: #4b0082;
+  letter-spacing: 0.3px;
 }
 
-/* Add Category Form */
-.add-category-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 25px;
-  align-items: center;
-  justify-content: center;
+.grid button {
+  background: linear-gradient(to right, #ff416c, #ff4b2b);
+  transition: all 0.3s ease;
+}
+.grid button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
 }
 
-.file-input-label {
-  display: inline-block;
-  background-color: #4a00e0;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.3s;
-}
-.file-input-label:hover {
-  background-color: #8e2de2;
-}
-.file-input-label input {
-  display: none;
+/* Empty State */
+p.text-center {
+  font-style: italic;
+  color: #7e22ce;
 }
 
-.slug-input {
-  flex: 1 1 200px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.add-btn {
-  background-color: #4a00e0;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.3s;
-}
-.add-btn:hover {
-  background-color: #8e2de2;
-}
-
-/* Categories List */
-.category-list {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 15px;
-}
-
-.category-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: #f5f5f5;
-  padding: 12px;
-  border-radius: 10px;
-  transition: box-shadow 0.3s;
-}
-.category-item:hover {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.category-img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-}
-
-.category-slug {
-  flex: 1;
-  font-weight: 500;
-  font-size: 15px;
-  color: #333;
-}
-
-.delete-btn {
-  background-color: #ff4d4f;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: background 0.3s;
-}
-.delete-btn:hover {
-  background-color: #ff7875;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .add-category-form {
-    flex-direction: column;
-    gap: 8px;
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .category-manager {
+    padding: 1.5rem;
   }
-  .slug-input {
+
+  form {
+    padding: 1rem;
+  }
+
+  button[type="submit"] {
     width: 100%;
   }
-  .category-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .category-img {
-    width: 100%;
-    height: auto;
+
+  .grid > div {
+    border-radius: 14px;
   }
 }
 </style>

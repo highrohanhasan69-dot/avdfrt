@@ -7,6 +7,15 @@ const loading = ref(false);
 const activeTab = ref("Pending");
 const tabs = ["Pending", "Processing", "Delivered"];
 
+// 🟣 Auto-detect API base URL
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
+
 const shortId = (id) => id.slice(0, 8);
 const formatDate = (date) =>
   new Date(date).toLocaleString("en-GB", {
@@ -17,14 +26,15 @@ const formatDate = (date) =>
     minute: "2-digit",
   });
 
-// ✅ Fetch all orders
+// ✅ Fetch all orders (Admin)
 const fetchOrders = async () => {
   try {
     loading.value = true;
-    const res = await axios.get("http://localhost:5000/api/checkout/admin/all");
+    const res = await axios.get("/checkout/admin/all");
+
     orders.value = (res.data.orders || []).map((o) => ({
       ...o,
-      newStatus: o.status, // নতুন temporary status রাখছি
+      newStatus: o.status,
       items:
         typeof o.items === "string"
           ? JSON.parse(o.items)
@@ -41,14 +51,7 @@ const fetchOrders = async () => {
   }
 };
 
-// ✅ Filter orders by active tab
-const filteredOrders = computed(() =>
-  orders.value
-    .filter((o) => o.status?.toLowerCase() === activeTab.value.toLowerCase())
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-);
-
-// ✅ Update status function (click করলে)
+// ✅ Update status
 const updateStatus = async (order) => {
   try {
     if (order.newStatus === order.status) {
@@ -56,18 +59,30 @@ const updateStatus = async (order) => {
       return;
     }
 
-    await axios.put(
-      `http://localhost:5000/api/checkout/admin/${order.id}/status`,
-      { status: order.newStatus }
-    );
+    await axios.put(`/checkout/admin/${order.id}/status`, {
+      status: order.newStatus,
+    });
 
     alert(`✅ Order ${shortId(order.id)} updated to ${order.newStatus}`);
-    fetchOrders(); // update এর পর list refresh হবে
+    fetchOrders(); // refresh
   } catch (err) {
     console.error("❌ Failed to update status:", err);
     alert("Update failed. Please try again!");
   }
 };
+
+// ✅ Filter orders by active tab
+const filteredOrders = computed(() =>
+  orders.value
+    .filter(
+      (o) =>
+        o.status?.toLowerCase() === activeTab.value.toLowerCase()
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.created_at) - new Date(a.created_at)
+    )
+);
 
 onMounted(fetchOrders);
 </script>
@@ -155,6 +170,8 @@ onMounted(fetchOrders);
     </div>
   </div>
 </template>
+
+
 
 <style scoped>
 .admin-orders {
