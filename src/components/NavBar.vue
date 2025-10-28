@@ -154,6 +154,17 @@ const router = useRouter();
 const cartStore = useCartStore();
 const { itemCount } = storeToRefs(cartStore);
 
+// ✅ Auto-detect API base (local + production)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
+
+console.log("🔗 Using API base URL:", API_BASE);
+
 const currentUser = ref(null);
 const cartOpen = ref(false);
 const mobileSearchOpen = ref(false);
@@ -165,9 +176,7 @@ const animateCart = ref(false);
 
 const getUser = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/auth/current-user", {
-      withCredentials: true,
-    });
+    const res = await axios.get(`${API_BASE}/auth/current-user`);
     currentUser.value = res.data.user;
   } catch {
     currentUser.value = null;
@@ -183,9 +192,7 @@ const fetchSuggestions = async () => {
     return;
   }
   try {
-    const res = await axios.get(
-      `http://localhost:5000/products/search?q=${encodeURIComponent(query)}`
-    );
+    const res = await axios.get(`${API_BASE.replace("/api", "")}/products/search?q=${encodeURIComponent(query)}`);
     suggestions.value = res.data || [];
     showSuggestions.value = true;
   } catch (err) {
@@ -225,6 +232,7 @@ watch(itemCount, () => {
   setTimeout(() => (animateCart.value = false), 400);
 });
 </script>
+
 
 <style scoped>
 :root {
