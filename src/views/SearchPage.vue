@@ -41,6 +41,17 @@ import Footer from "@/components/Footer.vue";
 import ProductCard from "@/components/ProductCard.vue";
 
 // ===============================
+// 🔹 API BASE AUTO-DETECTION
+// ===============================
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
+
+// ===============================
 // 🔹 Reactive Variables
 // ===============================
 const route = useRoute();
@@ -60,11 +71,9 @@ const fetchProducts = async (searchTerm) => {
       return;
     }
 
-    // ✅ Fetch from Node backend
+    // ✅ Use dynamic API base
     const res = await axios.get(
-      `http://localhost:5000/products/search?q=${encodeURIComponent(
-        searchTerm
-      )}`
+      `/products/search?q=${encodeURIComponent(searchTerm)}`
     );
 
     products.value = res.data || [];

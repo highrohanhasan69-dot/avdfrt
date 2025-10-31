@@ -106,7 +106,7 @@ import axios from "axios";
 import { ref, computed, onMounted } from "vue";
 import { useCart } from "@/composables/useCart";
 
-// 🟣 Auto detect backend base URL
+// 🟣 Auto detect backend base URL (Local + Render + Cloudflare)
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000/api"
@@ -169,7 +169,10 @@ const placeOrder = async () => {
       payment_method: paymentMethod.value,
     };
 
-    const res = await axios.post("/checkout", payload, { withCredentials: true });
+    // ✅ Works for both Localhost & Hosted
+    const res = await axios.post("/checkout", payload, {
+      withCredentials: true,
+    });
 
     if (res.data.success) {
       alert("✅ Order placed successfully!");
@@ -181,7 +184,7 @@ const placeOrder = async () => {
         upazila: "",
         thana: "",
       };
-      await fetchCart(); // clear cart
+      await fetchCart(); // clear cart after placing order
     } else {
       alert("❌ Failed to place order!");
     }
