@@ -13,7 +13,11 @@
         />
       </div>
 
-      <div v-else>
+      <div v-else class="empty">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+          alt="No Products"
+        />
         <p>No products found in this category.</p>
       </div>
     </div>
@@ -29,26 +33,36 @@ import ProductCard from "../components/ProductCard.vue";
 import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 
+// ✅ Props for category slug
 const props = defineProps({
-  slug: String
+  slug: String,
 });
+
+// ✅ Auto Detect Backend (Local + Render + Cloudflare)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+axios.defaults.baseURL = API_BASE;
+axios.defaults.withCredentials = true;
 
 const products = ref([]);
 
-// ✅ Fetch products from Node.js backend
+// ✅ Fetch products from backend
 const fetchProducts = async () => {
   try {
-    const res = await axios.get(`http://localhost:5000/products`);
-    // সব product থেকে category_slug অনুযায়ী filter
-    products.value = res.data.filter(
+    const res = await axios.get("/products"); // relative URL — auto detect
+    products.value = (res.data || []).filter(
       (p) => p.category_slug === props.slug
     );
   } catch (err) {
     console.error("❌ Error loading products:", err.message);
+    products.value = [];
   }
 };
 
-// ✅ যখন slug পরিবর্তন হয় (route পরিবর্তন), তখন নতুনভাবে data আনবে
+// ✅ Refetch when slug changes
 watch(
   () => props.slug,
   () => {
@@ -56,10 +70,9 @@ watch(
   }
 );
 
-onMounted(() => {
-  fetchProducts();
-});
+onMounted(fetchProducts);
 </script>
+
 
 <style scoped>
 .home-wrapper {
