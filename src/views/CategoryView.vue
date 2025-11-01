@@ -25,7 +25,6 @@
     <Footer />
   </div>
 </template>
-
 <script setup>
 import Navbar from "../components/NavBar.vue";
 import Footer from "../components/Footer.vue";
@@ -53,11 +52,13 @@ const products = ref([]);
 const fetchProducts = async () => {
   try {
     console.log("🔹 Category slug:", props.slug);
-    // ✅ তোমার backend অনুযায়ী '/products' ব্যবহার করো
+
+    // ✅ এখানে '/api/products' নয়, '/products' ব্যবহার করো
     const res = await axios.get("/products");
+
     console.log("✅ Total products loaded:", res.data?.length || 0);
 
-    // Filter products by category_slug
+    // Filter by category slug
     products.value = (res.data || []).filter(
       (p) => p.category_slug === props.slug
     );
