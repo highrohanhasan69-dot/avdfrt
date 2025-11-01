@@ -131,69 +131,210 @@ onMounted(fetchFooterData);
 </script>
 <style scoped>
 .footer {
-  background: #111;
-  color: #eee;
-  padding: 40px 20px;
-  font-family: "Alice", serif;
+  background-color: #0b1a28;
+  color: #c0c0c0;
+  padding: 40px 80px;
+  font-family: "Zalando Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
 }
 
-.footer-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+.footer-top {
+  display: flex;
+  justify-content: space-between;
   gap: 30px;
-  margin-bottom: 30px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
 }
 
-.footer-col h3 {
+.footer-column {
+  flex: 1;
+  min-width: 200px;
+}
+
+.footer-column h4 {
   color: #fff;
-  margin-bottom: 15px;
-  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #334455;
+  padding-bottom: 10px;
 }
 
-.footer-col ul {
+.footer-column ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-.footer-col ul li {
-  margin: 8px 0;
+.footer-column li {
+  margin-bottom: 10px;
 }
 
-.footer-col a {
-  color: #bbb;
+.footer-column a {
+  color: #c0c0c0;
   text-decoration: none;
+  font-size: 14px;
   transition: color 0.3s;
 }
 
-.footer-col a:hover {
-  color: #8e2de2;
+.footer-column a:hover {
+  color: #fff;
 }
 
-.social-icons a {
-  margin-right: 10px;
-  color: #ccc;
-  font-size: 20px;
-  transition: color 0.3s;
+.contact-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  border: 1px solid #334455;
+  padding: 15px;
+  border-radius: 8px;
 }
 
-.social-icons a:hover {
-  color: #8e2de2;
+.info-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-details .hours,
+.info-details .text {
+  font-size: 12px;
+  color: #888;
+}
+
+.info-details .number {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.about-us-row {
+  display: flex;
+  gap: 40px;
+}
+
+.about-us-row .sub-column {
+  flex: 1;
+}
+
+.address-box {
+  background-color: #1a2a38;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.address-box h5 {
+  color: #fff;
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.address-box p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.address-box a {
+  color: #c0c0c0;
+  text-decoration: underline;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #334455;
+  margin: 20px 0;
+}
+
+/* Footer Middle */
+.footer-middle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.footer-middle-left,
+.footer-middle-center,
+.footer-middle-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-middle-left {
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.footer-middle-center {
+  justify-content: center;
+  flex: 1;
+}
+
+.footer-middle-right {
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.app-links img {
+  height: 120px;
+  margin: 0 10px;
+  transition: transform 0.3s;
+}
+
+.app-links img:hover {
+  transform: scale(1.05);
+}
+
+.social-links img {
+  height: 36px;
+  margin: 0 10px;
+  transition: transform 0.3s;
+}
+
+.social-links img:hover {
+  transform: scale(1.15);
 }
 
 .footer-bottom {
-  border-top: 1px solid #333;
-  padding-top: 20px;
-  text-align: center;
-  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #888;
 }
 
-.app-links a {
-  margin: 0 8px;
-  color: #bbb;
-  font-size: 20px;
-}
-
-.app-links a:hover {
-  color: #8e2de2;
+@media (max-width: 768px) {
+  .footer {
+    padding: 20px;
+  }
+  .footer-top {
+    flex-direction: column;
+  }
+  .footer-middle {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .footer-middle-left,
+  .footer-middle-center,
+  .footer-middle-right {
+    justify-content: center;
+    flex: none;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  .about-us-row {
+    flex-direction: column;
+    gap: 20px;
+  }
 }
 </style>
