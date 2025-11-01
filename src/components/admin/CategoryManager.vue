@@ -136,232 +136,200 @@ onMounted(fetchCategories);
 </script>
 
 <style scoped>
-/* Overall container with a soft gradient background */
-.category-manager {
-  font-family: "Zalando Sans", "Poppins", sans-serif;
-  background: linear-gradient(135deg, #f7f3ff, #f2ecff);
-  min-height: 100vh;
-  padding-bottom: 3rem;
+.footer-manager {
+  max-width: 1100px;
+  margin: 70px auto;
+  padding: 10px;
+  font-family: "Zalando Sans", sans-serif;
 }
 
-/* Section Heading */
-h2 {
+.page-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 25px;
   background: linear-gradient(90deg, #4a00e0, #8e2de2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: 0.5px;
-  font-weight: 800;
 }
 
-/* Form Container Styling */
-form {
-  border: 1.5px solid #e9d5ff;
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 4px 18px rgba(147, 51, 234, 0.08);
-  transition: all 0.3s ease;
-}
-form:hover {
-  border-color: #c084fc;
-  box-shadow: 0 4px 25px rgba(147, 51, 234, 0.15);
-}
-
-/* Labels */
-label {
-  color: #4b0082;
-  font-weight: 600;
-}
-
-/* Text and File Inputs Base Style */
-.custom-text-input,
-.custom-file-input {
-  border: 1.5px solid #d6bcfa;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 0.95rem;
+/* ==== Section Card ==== */
+.section-card {
   background: #fff;
-  /* Remove outline and default focus ring to apply custom focus style */
-  outline: none;
+  border-radius: 16px;
+  box-shadow: 0 3px 18px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 28px;
+  border-left: 5px solid #8e2de2;
+  transition: 0.3s;
+}
+.section-card:hover {
+  transform: translateY(-2px);
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #4a00e0;
+  margin-bottom: 15px;
 }
 
-/* Hover and Focus for Inputs */
-.custom-text-input:hover,
-.custom-file-input:hover {
-  border-color: #b085f5;
-}
-.custom-text-input:focus,
-.custom-file-input:focus {
-  border-color: #8e2de2;
-  box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.2);
-}
-
-/* File Input ::file-selector-button (the "Browse/Choose file" button) */
-.custom-file-input::file-selector-button {
-  background: linear-gradient(90deg, #6a00f4, #9d34e6);
-  color: #fff;
-  font-weight: 600;
-  padding: 8px 16px;
-  margin-right: 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-.custom-file-input::file-selector-button:hover {
-  background: linear-gradient(90deg, #7c13ff, #a343eb);
-}
-/* Older WebKit (Safari) pseudo-element for file button */
-.custom-file-input::-webkit-file-upload-button {
-  background: linear-gradient(90deg, #6a00f4, #9d34e6);
-  color: #fff;
-  font-weight: 600;
-  padding: 8px 16px;
-  margin-right: 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-.custom-file-input::-webkit-file-upload-button:hover {
-  background: linear-gradient(90deg, #7c13ff, #a343eb);
-}
-
-/* Preview Image Box */
-.preview-image {
-  width: 120px;
-  height: 120px;
-  margin: 0.75rem auto 0;  /* top margin and centered horizontally */
-  background: #faf5ff;
-  border: 2px solid #ede9fe;
-  border-radius: 12px;
-  overflow: hidden;
+/* ==== Inputs ==== */
+.input-row,
+.input-grid {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
 }
-.preview-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.input-row input,
+.input-grid input {
+  flex: 1;
+  min-width: 150px;
+  padding: 9px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.3s;
 }
-
-/* Add Category Button */
-.add-btn {
-  background: linear-gradient(90deg, #6a00f4, #9d34e6);
-  box-shadow: 0 4px 12px rgba(134, 32, 230, 0.35);
-  padding: 11px 28px;
-  font-weight: 600;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  width: 100%;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-@media (min-width: 768px) {
-  .add-btn {
-    width: auto; /* on larger screens, button width adjusts to content */
-  }
-}
-.add-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(134, 32, 230, 0.45);
-  background: linear-gradient(90deg, #5a00d4, #8a2ac4);
+.input-row input:focus,
+.input-grid input:focus {
+  border-color: #8e2de2;
+  box-shadow: 0 0 6px rgba(142, 45, 226, 0.3);
 }
 
-/* Grid Layout for Category Cards */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-}
-.grid > div {
-  background: #fff;
-  border: 1.5px solid #ede9fe;
-  border-radius: 18px;
-  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.1);
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-.grid > div:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 26px rgba(147, 51, 234, 0.2);
-  border-color: #c084fc;
-}
-
-/* Category Image in Card: make it square and scalable */
-.grid .overflow-hidden {
-  width: 100%;
-  aspect-ratio: 1 / 1;          /* Ensure the container is always a square */
-  position: relative;
-}
-.grid .overflow-hidden img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.35s ease;
-}
-.grid .overflow-hidden img:hover {
-  transform: scale(1.06);
-}
-
-/* Category Text */
-.grid p {
-  text-align: center;
-  color: #4a008e;
-  font-weight: 600;
-  font-size: 1.05rem;
-  margin: 0;
-}
-
-/* Delete Button */
+/* ==== Buttons ==== */
+.add-btn,
+.update-btn,
 .delete-btn {
-  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  padding: 8px 14px;
   border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 10px 0;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 12px rgba(255, 75, 43, 0.25);
 }
+.add-btn {
+  background: linear-gradient(90deg, #8e2de2, #4a00e0);
+  color: white;
+}
+.update-btn {
+  background: #4a00e0;
+  color: white;
+}
+.delete-btn {
+  background: #ff4d4d;
+  color: white;
+}
+.add-btn:hover,
+.update-btn:hover,
 .delete-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(255, 75, 43, 0.4);
-  background: linear-gradient(90deg, #e04327, #e03b60);
+  opacity: 0.9;
+}
+.full-btn {
+  margin-top: 10px;
+  width: 100%;
 }
 
-/* Empty State Text */
-.category-manager p.text-center {
-  color: #7e22ce;
-  font-style: italic;
-  font-weight: 500;
+/* ==== Table (Desktop) ==== */
+.responsive-table {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  border-bottom: 1px solid #eee;
+  padding: 10px;
+  text-align: left;
+  font-size: 14px;
+}
+th {
+  background: #f9f8ff;
+  font-weight: 700;
+  color: #4a00e0;
+}
+.icon-img {
+  height: 40px;
+  border-radius: 6px;
 }
 
-/* Responsive Adjustments for Mobile */
+/* ==== Mobile Card Layout ==== */
 @media (max-width: 768px) {
-  .category-manager {
-    padding: 1.5rem;
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
   }
-  form {
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 6px rgba(142, 45, 226, 0.08);
+  }
+
+  td {
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13.5px;
+    padding: 6px 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #4a00e0;
+  }
+
+  td input[type="text"],
+  td input[type="file"] {
+    flex: 1;
+    margin-left: 8px;
+    border-radius: 6px;
+    padding: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .action-cell {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
+
+  .action-cell button {
+    flex: 1;
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .icon-img {
+    height: 35px;
+  }
+
+  .input-row,
+  .input-grid {
     flex-direction: column;
-    padding: 1.5rem;
   }
-  .add-btn {
+
+  .add-btn,
+  .update-btn,
+  .delete-btn {
     width: 100%;
-  }
-  /* Slightly smaller card image on small screens */
-  .grid .overflow-hidden {
-    aspect-ratio: 1 / 1;
-    /* Height will auto-adjust due to aspect-ratio and width */
-  }
-  .grid .overflow-hidden img:hover {
-    transform: none; /* disable hover zoom on small screens for usability */
+    font-size: 14px;
   }
 }
 </style>
