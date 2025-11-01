@@ -113,7 +113,10 @@
 import axios from "axios";
 import { ref, onMounted } from "vue";
 
-const API = "http://localhost:5000/api/footer";
+// ✅ Backend baseURL auto-detect (localhost vs render)
+const BASE_URL = window.location.hostname.includes("localhost")
+  ? "http://localhost:5000/api/footer"
+  : "https://your-render-backend.onrender.com/api/footer"; // 🔹 তোমার Render backend URL বসাও
 
 // ========== STATES ==========
 const supportItems = ref([]);
@@ -132,25 +135,31 @@ const newSocial = ref({ link: "", icon: "" });
 
 // ========== FETCH ALL ==========
 const fetchAll = async () => {
-  const [support, about, stay, app, social, texts] = await Promise.all([
-    axios.get(`${API}/support`),
-    axios.get(`${API}/about`),
-    axios.get(`${API}/stay-connected`),
-    axios.get(`${API}/app-links`),
-    axios.get(`${API}/social-links`),
-    axios.get(`${API}/texts`),
-  ]);
+  try {
+    const [support, about, stay, app, social, texts] = await Promise.all([
+      axios.get(`${BASE_URL}/support`),
+      axios.get(`${BASE_URL}/about`),
+      axios.get(`${BASE_URL}/stay-connected`),
+      axios.get(`${BASE_URL}/app-links`),
+      axios.get(`${BASE_URL}/social-links`),
+      axios.get(`${BASE_URL}/texts`),
+    ]);
 
-  supportItems.value = support.data || [];
-  aboutColumns.value = [[], [], []];
-  (about.data || []).forEach(item => aboutColumns.value[item.column_order - 1].push(item));
-  stayConnected.value = stay.data || {};
-  appLinks.value = app.data || [];
-  socialLinks.value = social.data || [];
-  if (texts.data) {
-    appText.value = texts.data.app_text;
-    copyright.value = texts.data.copyright;
-    poweredBy.value = texts.data.powered_by;
+    supportItems.value = support.data || [];
+    aboutColumns.value = [[], [], []];
+    (about.data || []).forEach((item) =>
+      aboutColumns.value[item.column_order - 1].push(item)
+    );
+    stayConnected.value = stay.data || {};
+    appLinks.value = app.data || [];
+    socialLinks.value = social.data || [];
+    if (texts.data) {
+      appText.value = texts.data.app_text;
+      copyright.value = texts.data.copyright;
+      poweredBy.value = texts.data.powered_by;
+    }
+  } catch (err) {
+    console.error("❌ Footer fetch failed:", err);
   }
 };
 
@@ -158,40 +167,46 @@ onMounted(fetchAll);
 
 // ========== SUPPORT ==========
 const addSupport = async () => {
-  if (!newSupport.value.label || !newSupport.value.value) return alert("Fill fields");
-  const res = await axios.post(`${API}/support`, newSupport.value);
+  if (!newSupport.value.label || !newSupport.value.value)
+    return alert("Fill all fields");
+  const res = await axios.post(`${BASE_URL}/support`, newSupport.value);
   supportItems.value.push(res.data);
   newSupport.value = { label: "", value: "" };
 };
 const updateSupport = async (item) => {
-  await axios.put(`${API}/support/${item.id}`, item);
+  await axios.put(`${BASE_URL}/support/${item.id}`, item);
 };
 const deleteSupport = async (id) => {
-  await axios.delete(`${API}/support/${id}`);
-  supportItems.value = supportItems.value.filter(i => i.id !== id);
+  await axios.delete(`${BASE_URL}/support/${id}`);
+  supportItems.value = supportItems.value.filter((i) => i.id !== id);
 };
 
 // ========== ABOUT ==========
 const addAbout = async (colIndex) => {
   const item = { ...newAbout.value, column_order: colIndex + 1 };
-  const res = await axios.post(`${API}/about`, item);
+  const res = await axios.post(`${BASE_URL}/about`, item);
   aboutColumns.value[colIndex].push(res.data);
   newAbout.value = { label: "", link: "" };
 };
 const updateAbout = async (item) => {
-  await axios.put(`${API}/about/${item.id}`, item);
+  await axios.put(`${BASE_URL}/about/${item.id}`, item);
 };
 const deleteAbout = async (id, colIndex) => {
-  await axios.delete(`${API}/about/${id}`);
-  aboutColumns.value[colIndex] = aboutColumns.value[colIndex].filter(i => i.id !== id);
+  await axios.delete(`${BASE_URL}/about/${id}`);
+  aboutColumns.value[colIndex] = aboutColumns.value[colIndex].filter(
+    (i) => i.id !== id
+  );
 };
 
 // ========== STAY CONNECTED ==========
 const updateStayConnected = async () => {
   if (!stayConnected.value.id) {
-    await axios.post(`${API}/stay-connected`, stayConnected.value);
+    await axios.post(`${BASE_URL}/stay-connected`, stayConnected.value);
   } else {
-    await axios.put(`${API}/stay-connected/${stayConnected.value.id}`, stayConnected.value);
+    await axios.put(
+      `${BASE_URL}/stay-connected/${stayConnected.value.id}`,
+      stayConnected.value
+    );
   }
 };
 
@@ -203,7 +218,7 @@ const addAppLink = async () => {
   const form = new FormData();
   form.append("link", newApp.value.link);
   if (newApp.value.iconFile) form.append("icon", newApp.value.iconFile);
-  const res = await axios.post(`${API}/app-links`, form);
+  const res = await axios.post(`${BASE_URL}/app-links`, form);
   appLinks.value.push(res.data);
   newApp.value = { link: "" };
 };
@@ -211,22 +226,23 @@ const updateAppLink = async (item) => {
   const form = new FormData();
   form.append("link", item.link);
   if (item.iconFile) form.append("icon", item.iconFile);
-  await axios.put(`${API}/app-links/${item.id}`, form);
+  await axios.put(`${BASE_URL}/app-links/${item.id}`, form);
 };
 const deleteAppLink = async (id) => {
-  await axios.delete(`${API}/app-links/${id}`);
-  appLinks.value = appLinks.value.filter(i => i.id !== id);
+  await axios.delete(`${BASE_URL}/app-links/${id}`);
+  appLinks.value = appLinks.value.filter((i) => i.id !== id);
 };
 
 // ========== SOCIAL ==========
 const handleSocialIcon = (e) => (newSocial.value.iconFile = e.target.files[0]);
-const handleUpdateSocialIcon = (e, item) => (item.iconFile = e.target.files[0]);
+const handleUpdateSocialIcon = (e, item) =>
+  (item.iconFile = e.target.files[0]);
 
 const addSocialLink = async () => {
   const form = new FormData();
   form.append("link", newSocial.value.link);
   if (newSocial.value.iconFile) form.append("icon", newSocial.value.iconFile);
-  const res = await axios.post(`${API}/social-links`, form);
+  const res = await axios.post(`${BASE_URL}/social-links`, form);
   socialLinks.value.push(res.data);
   newSocial.value = { link: "" };
 };
@@ -234,16 +250,16 @@ const updateSocialLink = async (item) => {
   const form = new FormData();
   form.append("link", item.link);
   if (item.iconFile) form.append("icon", item.iconFile);
-  await axios.put(`${API}/social-links/${item.id}`, form);
+  await axios.put(`${BASE_URL}/social-links/${item.id}`, form);
 };
 const deleteSocialLink = async (id) => {
-  await axios.delete(`${API}/social-links/${id}`);
-  socialLinks.value = socialLinks.value.filter(i => i.id !== id);
+  await axios.delete(`${BASE_URL}/social-links/${id}`);
+  socialLinks.value = socialLinks.value.filter((i) => i.id !== id);
 };
 
 // ========== TEXTS ==========
 const updateFooterTexts = async () => {
-  await axios.put(`${API}/texts`, {
+  await axios.put(`${BASE_URL}/texts`, {
     app_text: appText.value,
     copyright: copyright.value,
     powered_by: poweredBy.value,
