@@ -44,8 +44,11 @@ const API_BASE =
     ? "http://localhost:5000"
     : "https://avado-backend.onrender.com";
 
-axios.defaults.baseURL = API_BASE;
-axios.defaults.withCredentials = true;
+// ✅ Local axios instance (avoid /api prefix issues)
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
 
 // ✅ Hot Deals Data
 const hotDeals = ref([]);
@@ -53,7 +56,7 @@ const hotDeals = ref([]);
 // ✅ Fetch from Node.js backend
 const fetchHotDeals = async () => {
   try {
-    const res = await axios.get("/products");
+    const res = await api.get("/products"); // 🚫 no /api prefix
     const allProducts = res.data || [];
 
     // 🔥 Filter products that have is_hot_deal = true

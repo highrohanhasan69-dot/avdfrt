@@ -36,15 +36,30 @@ import Footer from "../components/Footer.vue";
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
+// 🟣 Auto-detect backend (Local + Render + Cloudflare)
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
+
+// ✅ Local axios instance to avoid /api prefix conflicts
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
+
+// ✅ Reactive list of categories
 const categories = ref([]);
 
-// ✅ Fetch categories from Node.js backend
+// ✅ Fetch all categories from backend
 const fetchCategories = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/categories");
+    const res = await api.get("/categories"); // 🚫 no /api prefix
     categories.value = res.data || [];
+    console.log("✅ Loaded categories:", categories.value.length);
   } catch (err) {
     console.error("❌ Error fetching categories:", err.message);
+    categories.value = [];
   }
 };
 
