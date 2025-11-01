@@ -1,50 +1,75 @@
 <template>
   <footer class="footer">
-    <div class="footer-section">
-      <div class="footer-col">
-        <h3>Support</h3>
+    <div class="footer-top">
+      <!-- Support Column -->
+      <div class="footer-column">
+        <h4>SUPPORT</h4>
         <ul>
-          <li v-for="link in supportLinks" :key="link.id">
-            <a :href="link.link" target="_blank">{{ link.text }}</a>
+          <li v-for="item in supportItems" :key="item.id">
+            <div class="contact-info">
+              <i class="phone-icon">📞</i>
+              <div class="info-details">
+                <span class="hours">{{ item.label }}</span>
+                <span class="number">{{ item.value }}</span>
+              </div>
+            </div>
           </li>
         </ul>
       </div>
 
-      <div class="footer-col">
-        <h3>About</h3>
-        <ul>
-          <li v-for="link in aboutLinks" :key="link.id">
-            <a :href="link.link" target="_blank">{{ link.text }}</a>
-          </li>
-        </ul>
+      <!-- About Us Column (3 Sub-columns) -->
+      <div class="footer-column">
+        <h4>ABOUT US</h4>
+        <div class="about-us-row">
+          <ul v-for="(column, index) in aboutColumns" :key="index" class="sub-column">
+            <li v-for="item in column" :key="item.id">
+              <a :href="item.link" target="_blank">{{ item.label }}</a>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <div class="footer-col">
-        <h3>Stay Connected</h3>
-        <ul>
-          <li v-for="link in stayConnected" :key="link.id">
-            <a :href="link.link" target="_blank">{{ link.text }}</a>
-          </li>
-        </ul>
+      <!-- Stay Connected Column -->
+      <div class="footer-column">
+        <h4>STAY CONNECTED</h4>
+        <div class="address-box" v-if="stayConnected">
+          <h5>{{ stayConnected.name }}</h5>
+          <p>{{ stayConnected.address }}</p>
+          <p>Email: <a :href="`mailto:${stayConnected.email}`">{{ stayConnected.email }}</a></p>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- App & Social Links -->
+    <div class="footer-middle">
+      <div class="footer-middle-left">
+        <p>{{ appText }}</p>
       </div>
 
-      <div class="footer-col">
-        <h3>Follow Us</h3>
-        <div class="social-icons">
+      <div class="footer-middle-center">
+        <div class="app-links">
+          <a v-for="app in appLinks" :key="app.id" :href="app.link" target="_blank">
+            <img :src="app.icon" alt="App Link" />
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-middle-right">
+        <div class="social-links">
           <a v-for="social in socialLinks" :key="social.id" :href="social.link" target="_blank">
-            <i :class="social.icon"></i>
+            <img :src="social.icon" alt="Social Link" />
           </a>
         </div>
       </div>
     </div>
 
+    <hr class="divider" />
+
     <div class="footer-bottom">
-      <p>{{ footerText }}</p>
-      <div class="app-links">
-        <a v-for="app in appLinks" :key="app.id" :href="app.link" target="_blank">
-          <i :class="app.icon"></i>
-        </a>
-      </div>
+      <p>{{ copyright }}</p>
+      <p>Powered By: {{ poweredBy }}</p>
     </div>
   </footer>
 </template>
@@ -53,46 +78,57 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 
-// 🔗 Auto-detect local or production API base
-const API_BASE =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
-    : "https://avado-backend.onrender.com/api";
+// ✅ Backend Base URL detect automatically (Render or Localhost)
+const backendURL =
+  window.location.hostname.includes("localhost")
+    ? "http://localhost:5000"
+    : "https://your-render-backend.onrender.com"; // 🔹 তোমার Render API লিংক বসাও
 
-// Reactive data
-const supportLinks = ref([]);
-const aboutLinks = ref([]);
-const stayConnected = ref([]);
+// Footer state variables
+const supportItems = ref([]);
+const aboutColumns = ref([[], [], []]);
+const stayConnected = ref(null);
 const appLinks = ref([]);
 const socialLinks = ref([]);
-const footerText = ref("");
+const appText = ref("");
+const copyright = ref("");
+const poweredBy = ref("");
 
-// 🔹 Fetch footer data from backend
+// ✅ Fetch Footer Data from Node.js Backend
 const fetchFooterData = async () => {
   try {
     const [support, about, stay, app, social, text] = await Promise.all([
-      axios.get(`${API_BASE}/footer/support`),
-      axios.get(`${API_BASE}/footer/about`),
-      axios.get(`${API_BASE}/footer/stay-connected`),
-      axios.get(`${API_BASE}/footer/app-links`),
-      axios.get(`${API_BASE}/footer/social-links`),
-      axios.get(`${API_BASE}/footer/texts`),
+      axios.get(`${backendURL}/api/footer/support`),
+      axios.get(`${backendURL}/api/footer/about`),
+      axios.get(`${backendURL}/api/footer/stay-connected`),
+      axios.get(`${backendURL}/api/footer/app-links`),
+      axios.get(`${backendURL}/api/footer/social-links`),
+      axios.get(`${backendURL}/api/footer/texts`),
     ]);
 
-    supportLinks.value = support.data;
-    aboutLinks.value = about.data;
-    stayConnected.value = stay.data;
-    appLinks.value = app.data;
-    socialLinks.value = social.data;
-    footerText.value = text.data?.[0]?.text || "";
+    supportItems.value = support.data || [];
+    appLinks.value = app.data || [];
+    socialLinks.value = social.data || [];
+    stayConnected.value = stay.data || null;
+
+    // about data কে তিন কলামে ভাগ করা
+    aboutColumns.value = [[], [], []];
+    (about.data || []).forEach((item) => {
+      aboutColumns.value[item.column_order - 1].push(item);
+    });
+
+    if (text.data) {
+      appText.value = text.data.app_text;
+      copyright.value = text.data.copyright;
+      poweredBy.value = text.data.powered_by;
+    }
   } catch (err) {
-    console.error("❌ Footer fetch error:", err);
+    console.error("❌ Footer load error:", err);
   }
 };
 
 onMounted(fetchFooterData);
 </script>
-
 <style scoped>
 .footer {
   background: #111;
