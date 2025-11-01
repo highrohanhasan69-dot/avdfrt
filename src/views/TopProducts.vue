@@ -42,8 +42,11 @@ const API_BASE =
     ? "http://localhost:5000"
     : "https://avado-backend.onrender.com";
 
-axios.defaults.baseURL = API_BASE;
-axios.defaults.withCredentials = true;
+// ✅ Create local axios instance (override global one to avoid /api prefix)
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
 
 // ✅ Reactive list for top products
 const topProducts = ref([]);
@@ -51,13 +54,11 @@ const topProducts = ref([]);
 // ✅ Fetch from Node.js backend
 const fetchTopProducts = async () => {
   try {
-    const res = await axios.get("/products");
+    const res = await api.get("/products"); // 🚫 No /api prefix here
     const allProducts = res.data || [];
 
     // ⭐ Filter only top products
-    topProducts.value = allProducts.filter(
-      (p) => p.is_top_product === true
-    );
+    topProducts.value = allProducts.filter((p) => p.is_top_product === true);
   } catch (err) {
     console.error("❌ Failed to fetch top products:", err);
   }
@@ -65,6 +66,7 @@ const fetchTopProducts = async () => {
 
 onMounted(fetchTopProducts);
 </script>
+
 
 <style scoped>
 /* Two side 10% margin */
