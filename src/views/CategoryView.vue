@@ -33,45 +33,41 @@ import ProductCard from "../components/ProductCard.vue";
 import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 
-// ✅ Props for category slug
-const props = defineProps({
-  slug: String,
-});
+const props = defineProps({ slug: String });
 
-// ✅ Auto Detect Backend (Local + Render + Cloudflare)
 const API_BASE =
   window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
-    : "https://avado-backend.onrender.com/api";
+    ? "http://localhost:5000"
+    : "https://avado-backend.onrender.com";
 
 axios.defaults.baseURL = API_BASE;
 axios.defaults.withCredentials = true;
 
 const products = ref([]);
 
-// ✅ Fetch products from backend
 const fetchProducts = async () => {
   try {
-    const res = await axios.get("/products"); // now hits /api/products correctly
+    console.log("🔹 Category slug:", props.slug);
+    const res = await axios.get("/api/products"); // ✅
+    console.log("✅ Products loaded:", res.data.length);
     products.value = (res.data || []).filter(
       (p) => p.category_slug === props.slug
     );
+    console.log("✅ Filtered products:", products.value.length);
   } catch (err) {
     console.error("❌ Error loading products:", err.message);
     products.value = [];
   }
 };
 
-// ✅ Refetch when slug changes
 watch(
   () => props.slug,
-  () => {
-    fetchProducts();
-  }
+  () => fetchProducts()
 );
 
 onMounted(fetchProducts);
 </script>
+
 
 
 <style scoped>
