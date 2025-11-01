@@ -33,8 +33,12 @@ import ProductCard from "../components/ProductCard.vue";
 import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 
-const props = defineProps({ slug: String });
+// ✅ Props for category slug
+const props = defineProps({
+  slug: String,
+});
 
+// ✅ Auto Detect Backend (Local + Render + Cloudflare)
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
@@ -45,11 +49,15 @@ axios.defaults.withCredentials = true;
 
 const products = ref([]);
 
+// ✅ Fetch products from backend
 const fetchProducts = async () => {
   try {
     console.log("🔹 Category slug:", props.slug);
-    const res = await axios.get("/api/products"); // ✅
-    console.log("✅ Products loaded:", res.data.length);
+    // ✅ তোমার backend অনুযায়ী '/products' ব্যবহার করো
+    const res = await axios.get("/products");
+    console.log("✅ Total products loaded:", res.data?.length || 0);
+
+    // Filter products by category_slug
     products.value = (res.data || []).filter(
       (p) => p.category_slug === props.slug
     );
@@ -60,14 +68,15 @@ const fetchProducts = async () => {
   }
 };
 
+// ✅ Watch slug change (route param change)
 watch(
   () => props.slug,
   () => fetchProducts()
 );
 
+// ✅ Initial load
 onMounted(fetchProducts);
 </script>
-
 
 
 <style scoped>
