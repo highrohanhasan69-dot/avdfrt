@@ -37,28 +37,26 @@ const props = defineProps({
   slug: String,
 });
 
-// ✅ Auto Detect Backend (Local + Render + Cloudflare)
+// ✅ Local override backend base (ignore global /api)
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
     : "https://avado-backend.onrender.com";
 
-axios.defaults.baseURL = API_BASE;
-axios.defaults.withCredentials = true;
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
 
 const products = ref([]);
 
-// ✅ Fetch products from backend
+// ✅ Fetch products from backend (no /api prefix)
 const fetchProducts = async () => {
   try {
     console.log("🔹 Category slug:", props.slug);
-
-    // ✅ এখানে '/api/products' নয়, '/products' ব্যবহার করো
-    const res = await axios.get("/products");
-
+    const res = await api.get("/products");
     console.log("✅ Total products loaded:", res.data?.length || 0);
 
-    // Filter by category slug
     products.value = (res.data || []).filter(
       (p) => p.category_slug === props.slug
     );
@@ -69,7 +67,7 @@ const fetchProducts = async () => {
   }
 };
 
-// ✅ Watch slug change (route param change)
+// ✅ Watch slug change
 watch(
   () => props.slug,
   () => fetchProducts()
@@ -78,7 +76,6 @@ watch(
 // ✅ Initial load
 onMounted(fetchProducts);
 </script>
-
 
 <style scoped>
 .home-wrapper {
