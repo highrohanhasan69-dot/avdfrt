@@ -41,8 +41,8 @@ const props = defineProps({
 // ✅ Auto Detect Backend (Local + Render + Cloudflare)
 const API_BASE =
   window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://avado-backend.onrender.com";
+    ? "http://localhost:5000/api"
+    : "https://avado-backend.onrender.com/api";
 
 axios.defaults.baseURL = API_BASE;
 axios.defaults.withCredentials = true;
@@ -52,7 +52,7 @@ const products = ref([]);
 // ✅ Fetch products from backend
 const fetchProducts = async () => {
   try {
-    const res = await axios.get("/products"); // relative URL — auto detect
+    const res = await axios.get("/products"); // now hits /api/products correctly
     products.value = (res.data || []).filter(
       (p) => p.category_slug === props.slug
     );
