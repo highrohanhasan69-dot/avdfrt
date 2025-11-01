@@ -283,7 +283,7 @@ onMounted(fetchFooterData);
 }
 
 .app-links img {
-  height: 120px;
+  height: 64px;
   margin: 0 10px;
   transition: transform 0.3s;
 }
