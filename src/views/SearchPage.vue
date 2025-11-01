@@ -41,15 +41,18 @@ import Footer from "@/components/Footer.vue";
 import ProductCard from "@/components/ProductCard.vue";
 
 // ===============================
-// 🔹 API BASE AUTO-DETECTION
+// 🔹 Auto Detect Backend URL (Local + Render)
 // ===============================
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
     : "https://avado-backend.onrender.com";
 
-axios.defaults.baseURL = API_BASE;
-axios.defaults.withCredentials = true;
+// ✅ Use axios instance (no /api prefix issues)
+const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+});
 
 // ===============================
 // 🔹 Reactive Variables
@@ -57,10 +60,11 @@ axios.defaults.withCredentials = true;
 const route = useRoute();
 const query = ref(route.query.q || "");
 const products = ref([]);
+const allProducts = ref([]);
 const loading = ref(false);
 
 // ===============================
-// 🔍 Fetch Products (Node.js API)
+// 🔍 Fetch All Products Then Filter (fuzzy search)
 // ===============================
 const fetchProducts = async (searchTerm) => {
   loading.value = true;
@@ -71,12 +75,35 @@ const fetchProducts = async (searchTerm) => {
       return;
     }
 
-    // ✅ Use dynamic API base
-    const res = await axios.get(
-      `/products/search?q=${encodeURIComponent(searchTerm)}`
-    );
+    // 1️⃣ Load all products from backend
+    const res = await api.get("/products");
+    allProducts.value = res.data || [];
 
-    products.value = res.data || [];
+    // 2️⃣ Convert query to lowercase
+    const q = searchTerm.toLowerCase().trim();
+
+    // 3️⃣ Filter by partial match (fuzzy logic)
+    products.value = allProducts.value
+      .filter((p) => {
+        const name = (p.name || "").toLowerCase();
+        const desc = (p.description || "").toLowerCase();
+        const category = (p.category_slug || "").toLowerCase();
+        return (
+          name.includes(q) ||
+          desc.includes(q) ||
+          category.includes(q)
+        );
+      })
+      // 4️⃣ Sort by best match (startsWith first)
+      .sort((a, b) => {
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
+        if (aName.startsWith(q) && !bName.startsWith(q)) return -1;
+        if (!aName.startsWith(q) && bName.startsWith(q)) return 1;
+        return aName.localeCompare(bName);
+      });
+
+    console.log(`✅ Found ${products.value.length} matches for "${q}"`);
   } catch (err) {
     console.error("❌ Search Error:", err.message);
     products.value = [];
@@ -86,7 +113,7 @@ const fetchProducts = async (searchTerm) => {
 };
 
 // ===============================
-// 🧠 Watch for query param change
+// 🧠 Watch for query param change (reactive search)
 // ===============================
 watch(
   () => route.query.q,
@@ -104,6 +131,7 @@ onMounted(() => {
   fetchProducts(query.value);
 });
 </script>
+
 
 <style scoped>
 /* =============================== */
