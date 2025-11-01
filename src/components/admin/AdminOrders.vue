@@ -7,7 +7,6 @@ const loading = ref(false);
 const activeTab = ref("Pending");
 const tabs = ["Pending", "Processing", "Delivered"];
 
-// 🟣 Auto-detect API base URL
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000/api"
@@ -26,7 +25,6 @@ const formatDate = (date) =>
     minute: "2-digit",
   });
 
-// ✅ Fetch all orders (Admin)
 const fetchOrders = async () => {
   try {
     loading.value = true;
@@ -35,10 +33,7 @@ const fetchOrders = async () => {
     orders.value = (res.data.orders || []).map((o) => ({
       ...o,
       newStatus: o.status,
-      items:
-        typeof o.items === "string"
-          ? JSON.parse(o.items)
-          : o.items || [],
+      items: typeof o.items === "string" ? JSON.parse(o.items) : o.items || [],
       customer:
         typeof o.customer === "string"
           ? JSON.parse(o.customer)
@@ -51,7 +46,6 @@ const fetchOrders = async () => {
   }
 };
 
-// ✅ Update status
 const updateStatus = async (order) => {
   try {
     if (order.newStatus === order.status) {
@@ -64,24 +58,19 @@ const updateStatus = async (order) => {
     });
 
     alert(`✅ Order ${shortId(order.id)} updated to ${order.newStatus}`);
-    fetchOrders(); // refresh
+    fetchOrders();
   } catch (err) {
     console.error("❌ Failed to update status:", err);
     alert("Update failed. Please try again!");
   }
 };
 
-// ✅ Filter orders by active tab
 const filteredOrders = computed(() =>
   orders.value
     .filter(
-      (o) =>
-        o.status?.toLowerCase() === activeTab.value.toLowerCase()
+      (o) => o.status?.toLowerCase() === activeTab.value.toLowerCase()
     )
-    .sort(
-      (a, b) =>
-        new Date(b.created_at) - new Date(a.created_at)
-    )
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 );
 
 onMounted(fetchOrders);
@@ -104,59 +93,46 @@ onMounted(fetchOrders);
     </div>
 
     <!-- Table -->
-    <div class="table-container" v-if="filteredOrders.length && !loading">
-      <table class="orders-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Customer Info</th>
-            <th>Address</th>
-            <th>Payment</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Update</th>
-          </tr>
-        </thead>
+    <div v-if="filteredOrders.length && !loading" class="table-wrapper">
+      <div class="order-card" v-for="(o, i) in filteredOrders" :key="i">
+        <div class="order-top">
+          <span class="order-id">#{{ shortId(o.id) }}</span>
+          <span class="order-date">{{ formatDate(o.created_at) }}</span>
+        </div>
 
-        <tbody>
-          <tr v-for="(o, i) in filteredOrders" :key="i">
-            <td>#{{ shortId(o.id) }}</td>
-            <td>{{ formatDate(o.created_at) }}</td>
-            <td>
-              <div class="customer-info">
-                <p><b>{{ o.customer.name }}</b></p>
-                <p>📞 {{ o.customer.phone }}</p>
-              </div>
-            </td>
-            <td>
+        <div class="order-body">
+          <div class="info">
+            <p class="customer"><b>{{ o.customer.name }}</b></p>
+            <p class="phone">📞 {{ o.customer.phone }}</p>
+            <p class="address">
               {{ o.customer.address }}
-              <div v-if="o.customer.district" class="sub-addr">
-                {{ o.customer.district }}, {{ o.customer.upazila }},
+              <span v-if="o.customer.district">
+                , {{ o.customer.district }}, {{ o.customer.upazila }},
                 {{ o.customer.thana }}
-              </div>
-            </td>
-            <td>{{ o.payment_method }}</td>
-            <td class="total">৳{{ o.total }}</td>
-            <td>
-              <select v-model="o.newStatus" class="status-select">
-                <option value="pending">Pending</option>
-                <option value="processing">Processing</option>
-                <option value="delivered">Delivered</option>
-              </select>
-            </td>
-            <td>
-              <button class="update-btn" @click="updateStatus(o)">
-                Update
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </span>
+            </p>
+          </div>
+
+          <div class="details">
+            <p><b>Payment:</b> {{ o.payment_method }}</p>
+            <p class="total"><b>Total:</b> ৳{{ o.total }}</p>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          <select v-model="o.newStatus" class="status-select">
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="delivered">Delivered</option>
+          </select>
+          <button class="update-btn" @click="updateStatus(o)">Update</button>
+        </div>
+      </div>
     </div>
 
     <!-- Loader -->
     <div v-else-if="loading" class="loading">
+      <div class="loader"></div>
       <p>Loading orders...</p>
     </div>
 
@@ -171,22 +147,19 @@ onMounted(fetchOrders);
   </div>
 </template>
 
-
-
 <style scoped>
 .admin-orders {
-  width: 95%;
+  width: 92%;
   max-width: 1100px;
-  margin: 90px auto;
+  margin: 80px auto;
   font-family: "Zalando Sans", sans-serif;
 }
 
-/* Title */
 .title {
   text-align: center;
   font-size: 28px;
   font-weight: 800;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   background: linear-gradient(90deg, #4a00e0, #8e2de2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -196,22 +169,19 @@ onMounted(fetchOrders);
 .tabs {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 25px;
+  gap: 8px;
+  margin-bottom: 22px;
   flex-wrap: wrap;
 }
 .tab-btn {
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: #eee;
-  color: #444;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
   font-weight: 600;
+  background: #f2f2f2;
+  color: #444;
   cursor: pointer;
-  transition: 0.3s;
-}
-.tab-btn:hover {
-  background: #ddd;
+  transition: all 0.3s;
 }
 .tab-btn.active {
   background: linear-gradient(90deg, #4a00e0, #8e2de2);
@@ -219,58 +189,82 @@ onMounted(fetchOrders);
   box-shadow: 0 3px 10px rgba(142, 45, 226, 0.3);
 }
 
-/* Table */
-.table-container {
-  overflow-x: auto;
+/* Order Card */
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
-.orders-table {
-  width: 100%;
-  border-collapse: collapse;
+
+.order-card {
   background: #fff;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(142, 45, 226, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+  padding: 16px 18px;
+  border-left: 5px solid #8e2de2;
 }
-.orders-table th,
-.orders-table td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-  text-align: center;
-  font-size: 14px;
-}
-.orders-table th {
-  background: linear-gradient(90deg, #4a00e0, #8e2de2);
-  color: #fff;
+
+.order-top {
+  display: flex;
+  justify-content: space-between;
   font-weight: 700;
-  text-transform: capitalize;
+  color: #4a00e0;
+  margin-bottom: 10px;
 }
-.customer-info p {
-  margin: 0;
-  line-height: 1.4;
+.order-body {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
-.sub-addr {
-  font-size: 12px;
-  color: #777;
-  margin-top: 2px;
+.info {
+  flex: 1;
+  min-width: 200px;
+}
+.details {
+  flex: 1;
+  min-width: 160px;
+  text-align: right;
 }
 .total {
   color: #4a00e0;
-  font-weight: 800;
+  font-weight: 700;
+}
+.address {
+  font-size: 13px;
+  color: #666;
+}
+.phone {
+  font-size: 13px;
+  color: #777;
+}
+
+/* Actions */
+.order-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 .status-select {
-  padding: 6px;
+  padding: 6px 8px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  flex: 1;
+  min-width: 120px;
 }
 .update-btn {
-  padding: 6px 12px;
+  flex: 1;
+  min-width: 100px;
   background: linear-gradient(90deg, #8e2de2, #4a00e0);
   color: white;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s;
+  padding: 8px 12px;
   font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
 }
 .update-btn:hover {
   opacity: 0.9;
@@ -279,9 +273,21 @@ onMounted(fetchOrders);
 /* Loader */
 .loading {
   text-align: center;
-  font-size: 16px;
   color: #555;
-  margin-top: 40px;
+}
+.loader {
+  border: 4px solid #eee;
+  border-top: 4px solid #8e2de2;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  margin: 15px auto;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Empty */
@@ -291,37 +297,40 @@ onMounted(fetchOrders);
   color: #777;
 }
 .empty img {
-  width: 120px;
+  width: 110px;
   opacity: 0.8;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-  .orders-table th,
-  .orders-table td {
-    font-size: 13px;
-    padding: 10px;
-  }
-}
-
+/* ✅ Responsive */
 @media (max-width: 768px) {
   .admin-orders {
-    width: 96%;
-    margin: 70px auto;
+    width: 95%;
+    margin: 60px auto;
   }
-  .tab-btn {
-    padding: 8px 12px;
-    font-size: 13px;
+
+  .order-card {
+    padding: 14px;
   }
-  .orders-table {
-    font-size: 12px;
+
+  .order-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
   }
-  .orders-table th {
-    font-size: 13px;
+
+  .details {
+    text-align: left;
   }
-  .orders-table td {
-    padding: 8px;
+
+  .order-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .update-btn,
+  .status-select {
+    width: 100%;
   }
 }
 </style>
