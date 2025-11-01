@@ -116,7 +116,7 @@ import { ref, onMounted } from "vue";
 // ✅ Backend baseURL auto-detect (localhost vs render)
 const BASE_URL = window.location.hostname.includes("localhost")
   ? "http://localhost:5000/api/footer"
-  : "https://your-render-backend.onrender.com/api/footer"; // 🔹 তোমার Render backend URL বসাও
+  : "https://avado-backend.onrender.com/api/footer"; // 🔹 তোমার Render backend URL বসাও
 
 // ========== STATES ==========
 const supportItems = ref([]);
