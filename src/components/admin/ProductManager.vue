@@ -434,5 +434,91 @@ button {
   text-align: center;
   color: #777;
   margin-top: 20px;
+} /* ✅ Mobile Responsive Fix for All Products Section */
+@media (max-width: 768px) {
+  .product-list {
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .product-table {
+    min-width: 600px; /* টেবিল মোবাইলেও সুন্দরভাবে স্ক্রল হবে */
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .product-table th,
+  .product-table td {
+    padding: 8px 6px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .thumb {
+    width: 45px;
+    height: 45px;
+    border-radius: 5px;
+  }
+
+  .product-list h2 {
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  /* টেবিলটাকে সুন্দরভাবে স্ক্রলযোগ্য করলাম */
+  .product-list::-webkit-scrollbar {
+    height: 6px;
+  }
+  .product-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #4a00e0, #8e2de2);
+    border-radius: 10px;
+  }
+  .product-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
 }
+
+/* ✅ Extra Small Devices (<= 480px) */
+@media (max-width: 480px) {
+  .product-manager {
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 13px;
+  }
+
+  .btn-submit {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .product-table th,
+  .product-table td {
+    padding: 6px 4px;
+  }
+
+  .thumb {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 </style>
