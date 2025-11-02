@@ -270,14 +270,24 @@ const handleBuyNow = async () => {
 };
 
 // ---------- Lifecycle ----------
-onMounted(fetchProduct);
+onMounted(() => {
+  fetchProduct();
+
+  // ✅ সবসময় টপ থেকে পেজ লোড হবে
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 watch(
   () => route.params.id,
   (newId) => {
     productId.value = newId;
     fetchProduct();
+
+    // ✅ নতুন প্রোডাক্টে ঢুকলে পেজ আবার টপে যাবে
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 );
+
 </script>
 
 
@@ -475,13 +485,36 @@ watch(
     border-radius: 12px;
     box-shadow: 0 0 8px rgba(138, 43, 226, 0.1);
   }
-  .price {
-    font-size: 1.3em;
+.price {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 1.2em;
     margin-bottom: 15px;
+    word-wrap: break-word;
+    text-align: center;
+  }
+   .original-price {
+    text-decoration: line-through;
+    color: #888;
+    font-size: 1em;
+    margin: 0;
+  }
+  .discounted-price {
+    color: #e53935;
+    font-weight: 700;
+    font-size: 1.3em;
+    margin: 0;
   }
   .related-products-container {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+  }
+   .details-container {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 </style>
