@@ -94,16 +94,20 @@
         <i class="fas fa-times close" @click="toggleMobileSearch"></i>
       </div>
 
-      <ul v-if="suggestions.length" class="mobile-suggestion-list">
-        <li
-          v-for="(product, index) in suggestions"
-          :key="index"
-          @click="goToProduct(product.id)"
-        >
-          <img :src="product.image_url" />
-          <span>{{ product.name }}</span>
-        </li>
-      </ul>
+     <ul
+  v-if="showSuggestions && suggestions.length"
+  class="mobile-suggestion-list"
+>
+  <li
+    v-for="(product, index) in suggestions"
+    :key="index"
+    @click="goToProduct(product.id)"
+  >
+    <img :src="product.image_url" alt="product" />
+    <span>{{ product.name }}</span>
+  </li>
+</ul>
+
     </div>
 
     <!-- 📱 Mobile Bottom Bar -->
