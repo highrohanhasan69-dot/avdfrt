@@ -190,11 +190,15 @@ onMounted(getUser);
 // ✅ Search products (use full backend base without /api)
 const fetchSuggestions = async () => {
   const query = searchQuery.value.trim();
+
   if (!query) {
     suggestions.value = [];
     showSuggestions.value = false;
     return;
   }
+
+  showSuggestions.value = true; // ✅ type শুরু হতেই visible রাখবো
+
   try {
     const base =
       window.location.hostname === "localhost"
@@ -203,12 +207,13 @@ const fetchSuggestions = async () => {
     const res = await axios.get(
       `${base}/products/search?q=${encodeURIComponent(query)}`
     );
+
     suggestions.value = res.data || [];
-    showSuggestions.value = true;
   } catch (err) {
     console.error("❌ Search failed:", err);
   }
 };
+
 
 // ✅ Navigation Functions
 const goToProduct = (id) => {
@@ -528,6 +533,8 @@ watch(itemCount, () => {
     backdrop-filter: blur(6px);
     z-index: 2000;
     padding: 20px;
+    padding-bottom: 80px; /* ✅ keyboard overlap fix */
+  overscroll-behavior: contain; /* ✅ prevent scroll jump */
     overflow-y: auto;
   }
   .search-input {
