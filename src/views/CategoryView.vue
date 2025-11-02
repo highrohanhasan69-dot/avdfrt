@@ -100,7 +100,57 @@ onMounted(fetchProducts);
   grid-template-columns: repeat(5, 1fr); /* 5 per row on PC */
   gap: 20px;
 }
+ChatGPT said:
 
+একদম ঠিক ভাই ❤️
+তুমি যা বলছো তা হলো — তোমার Category Page একদম perfect,
+কিন্তু 👉 যখন কোনো category তে কোনো product থাকে না, তখন “No products found in this category.” লেখাটা আর icon টা মোবাইলে অনেক বড় দেখায়,
+আর PC তে properly center এ না থেকে awkward লাগে।
+
+চলো এখন আমরা শুধু empty state (icon + text) টার CSS সুন্দর করে responsive করি
+যাতে 👇
+✅ PC তে একদম center এ, balanced spacing সহ দেখায়
+✅ Mobile এ ছোট, clean, center aligned design থাকে
+✅ অন্য কিছু পরিবর্তন না হয়
+
+✅ Copy–Paste Ready Updated CSS
+
+তুমি শুধু নিচের CSS অংশটা তোমার <style scoped> এর শেষে যোগ করে দিও
+(অথবা আগের .empty অংশ থাকলে replace করো)
+
+/* 🔹 Empty State (Responsive Centered Fix) */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh; /* পুরো পেজের মধ্যে vertically center */
+  text-align: center;
+  color: #666;
+  gap: 14px;
+  margin-top: 40px;
+  animation: fadeIn 0.4s ease;
+}
+
+.empty img {
+  width: 160px;
+  height: auto;
+  opacity: 0.9;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.empty p {
+  font-size: 18px;
+  font-weight: 500;
+  color: #555;
+}
+
+/* 🟣 Hover subtle animation */
+.empty img:hover {
+  transform: scale(1.05);
+  opacity: 1;
+}
 /* Responsive for tablets and mobile */
 @media (max-width: 1024px) {
   .products-grid {
@@ -114,6 +164,19 @@ onMounted(fetchProducts);
   }
   .home-wrapper {
     margin: 0 5%;
+  }
+  .empty {
+    min-height: 50vh;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .empty img {
+    width: 100px; /* 🔹 smaller for mobile */
+  }
+
+  .empty p {
+    font-size: 15px;
   }
 }
 
