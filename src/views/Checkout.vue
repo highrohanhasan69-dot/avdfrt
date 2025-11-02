@@ -230,7 +230,14 @@ onMounted(fetchCart);
   background: #fff;
   padding: 25px;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.1);
+  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.08);
+}
+
+.order-summary h2 {
+  font-size: 20px;
+  color: #4a00e0;
+  font-weight: 700;
+  margin-bottom: 15px;
 }
 
 .summary-item {
@@ -239,41 +246,51 @@ onMounted(fetchCart);
   border-bottom: 1px solid #eee;
   padding: 10px 0;
 }
+
 .summary-img {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 8px;
   object-fit: cover;
   margin-right: 15px;
 }
+
 .summary-details {
   flex: 1;
 }
+
 .summary-name {
   font-weight: 600;
   color: #333;
-}
-.summary-price {
   font-size: 15px;
+  margin-bottom: 3px;
+}
+
+.summary-price {
+  font-size: 14px;
   color: #555;
 }
+
 .discounted {
   color: #e67e22;
   font-weight: 600;
 }
+
 .original {
   text-decoration: line-through;
   color: #999;
-  font-size: 13px;
+  font-size: 12px;
   margin-left: 6px;
 }
+
 .total-section {
   margin-top: 15px;
   text-align: right;
 }
+
 .total-section h3 {
   color: #4a00e0;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
 }
 
@@ -284,24 +301,36 @@ onMounted(fetchCart);
   background: #fff;
   padding: 25px;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.1);
+  box-shadow: 0 4px 20px rgba(142, 45, 226, 0.08);
 }
 
 .checkout-form h2 {
-  margin-bottom: 20px;
+  font-size: 20px;
   color: #4a00e0;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
 .checkout-form input,
 .checkout-form select {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 14px;
+  background: #fafafa;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.checkout-form input:focus,
+.checkout-form select:focus {
+  border-color: #8e2de2;
+  box-shadow: 0 0 0 2px rgba(142, 45, 226, 0.15);
+  outline: none;
+}
+
+/* 🟣 Confirm Button */
 .checkout-btn {
   background: linear-gradient(90deg, #4a00e0, #8e2de2);
   color: #fff;
@@ -311,18 +340,19 @@ onMounted(fetchCart);
   cursor: pointer;
   font-weight: 600;
   font-size: 16px;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
+
 .checkout-btn:hover {
   opacity: 0.9;
   transform: scale(1.02);
 }
 
-/* ✅ MOBILE RESPONSIVE DESIGN */
+/* ✅ Tablet */
 @media (max-width: 992px) {
   .checkout-page {
     width: 95%;
-    margin: 60px auto;
+    margin: 70px auto;
   }
 
   .checkout-title {
@@ -337,12 +367,8 @@ onMounted(fetchCart);
 
   .order-summary,
   .checkout-form {
-    min-width: 100%;
     padding: 20px;
-  }
-
-  .summary-item {
-    align-items: flex-start;
+    border-radius: 14px;
   }
 
   .summary-img {
@@ -350,26 +376,22 @@ onMounted(fetchCart);
     height: 65px;
   }
 
-  .summary-details {
-    margin-left: 8px;
-  }
-
   .summary-name {
-    font-size: 15px;
-  }
-
-  .summary-price {
     font-size: 14px;
   }
 
+  .summary-price {
+    font-size: 13px;
+  }
+
   .total-section h3 {
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .checkout-form input,
   .checkout-form select {
     font-size: 13px;
-    padding: 9px;
+    padding: 9px 10px;
   }
 
   .checkout-btn {
@@ -378,21 +400,29 @@ onMounted(fetchCart);
   }
 }
 
-/* ✅ SMALL MOBILE (≤600px) */
+/* ✅ Mobile */
 @media (max-width: 600px) {
   .checkout-page {
-    width: 95%;
+    width: 94%;
     margin: 40px auto;
   }
 
   .checkout-title {
     font-size: 22px;
+    margin-bottom: 25px;
   }
 
   .order-summary,
   .checkout-form {
     padding: 16px;
     border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(142, 45, 226, 0.08);
+  }
+
+  .order-summary h2,
+  .checkout-form h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
   }
 
   .summary-img {
@@ -401,43 +431,38 @@ onMounted(fetchCart);
   }
 
   .summary-name {
-    font-size: 14px;
+    font-size: 13.5px;
   }
 
   .summary-price {
-    font-size: 13px;
+    font-size: 12.5px;
   }
 
-  .checkout-form h2 {
-    font-size: 18px;
-    margin-bottom: 15px;
-  }
-
+  /* 🔹 Compact Inputs */
   .checkout-form input,
   .checkout-form select {
-    padding: 8px;
+    padding: 8px 9px;
     font-size: 13px;
+    border-radius: 7px;
+    margin-bottom: 10px;
   }
 
   .checkout-btn {
     font-size: 14px;
-    padding: 10px 0;
+    padding: 9px 0;
+    border-radius: 8px;
   }
 
   .total-section h3 {
-    font-size: 17px;
+    font-size: 16px;
   }
 }
 
-/* ✅ VERY SMALL SCREEN (≤400px) */
+/* ✅ Extra Small Devices */
 @media (max-width: 400px) {
   .checkout-page {
-    width: 100%;
-    margin: 20px auto;
-  }
-
-  .checkout-container {
-    gap: 20px;
+    width: 98%;
+    margin: 25px auto;
   }
 
   .checkout-title {
@@ -460,14 +485,13 @@ onMounted(fetchCart);
 
   .checkout-form input,
   .checkout-form select {
+    padding: 7px 8px;
     font-size: 12px;
-    padding: 7px;
   }
 
   .checkout-btn {
     font-size: 13px;
-    padding: 9px 0;
+    padding: 8px 0;
   }
 }
-
 </style>
