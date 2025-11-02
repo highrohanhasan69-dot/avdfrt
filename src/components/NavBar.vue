@@ -551,32 +551,46 @@ watch(itemCount, () => {
   }
 
   /* ✅ Mobile suggestions */
-  .mobile-suggestion-list {
-    background: #fff;
-    border-radius: 10px;
-    margin-top: 15px;
-    padding: 10px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
-    max-height: 60vh;
-    overflow-y: auto;
-    z-index: 3000;
-  }
-  .mobile-suggestion-list li {
-    display: flex;
-    align-items: center;
-    padding: 8px 10px;
-    gap: 10px;
-    border-bottom: 1px solid #eee;
-  }
-  .mobile-suggestion-list img {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    object-fit: cover;
-  }
-  .mobile-suggestion-list span {
-    font-size: 14px;
-    color: #333;
-  }
+/* ✅ Mobile suggestions (Fixed for keyboard view) */
+.mobile-suggestion-list {
+  position: fixed; /* 🔥 Previously was relative */
+  top: 100px; /* input box এর নিচে থেকে শুরু হবে */
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border-radius: 14px 14px 0 0;
+  margin-top: 0;
+  padding: 10px 0;
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.25);
+  max-height: 55vh;
+  overflow-y: auto;
+  z-index: 4000; /* overlay-এর উপরে রাখার জন্য */
+  -webkit-overflow-scrolling: touch;
+  transition: all 0.3s ease;
+}
+
+.mobile-suggestion-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+.mobile-suggestion-list li:hover {
+  background: rgba(142, 45, 226, 0.08);
+}
+.mobile-suggestion-list img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.mobile-suggestion-list span {
+  font-size: 15px;
+  color: #222;
+  font-family: var(--font-main);
+}
+
 }
 </style>
