@@ -66,21 +66,6 @@
               placeholder="Full Address"
               required
             />
-            <input
-              v-model="customer.district"
-              type="text"
-              placeholder="District (Optional)"
-            />
-            <input
-              v-model="customer.upazila"
-              type="text"
-              placeholder="Upazila (Optional)"
-            />
-            <input
-              v-model="customer.thana"
-              type="text"
-              placeholder="Thana (Optional)"
-            />
 
             <label>Payment Method</label>
             <select v-model="paymentMethod">
