@@ -299,7 +299,30 @@ header h2 {
   background: linear-gradient(90deg, #8e2de2, #4a00e0);
   transform: scale(1.02);
 }
+/* 🔹 Empty State (Fixed for mobile + desktop) */
+.empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 150px); /* পুরো drawer এর মধ্যে vertically center */
+  text-align: center;
+  color: #666;
+  gap: 12px;
+}
 
+.empty-box img {
+  width: 120px;
+  height: auto;
+  opacity: 0.85;
+  margin-bottom: 6px;
+  transition: all 0.3s ease;
+}
+
+.empty-box p {
+  font-size: 16px;
+  font-weight: 500;
+}
 /* 🔹 Animation */
 @keyframes slideIn {
   from {
@@ -317,5 +340,19 @@ header h2 {
 .drawer::-webkit-scrollbar-thumb {
   background-color: rgba(142, 45, 226, 0.3);
   border-radius: 5px;
+}
+/* ✅ Mobile responsive adjustment */
+@media (max-width: 768px) {
+  .empty-box {
+    height: calc(100vh - 120px);
+    gap: 8px;
+  }
+  .empty-box img {
+    width: 80px; /* 🔹 ছোট করা হলো */
+    opacity: 0.9;
+  }
+  .empty-box p {
+    font-size: 14px;
+  }
 }
 </style>
