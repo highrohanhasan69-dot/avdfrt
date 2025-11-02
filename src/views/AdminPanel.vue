@@ -78,7 +78,7 @@
 
 <script setup>
 import { ref } from "vue";
-import Dashboard from "@/components/AdminDashboard.vue";
+import Dashboard from "../components/admin/AdminDashboard.vue";
 import BannerManager from "../components/admin/BannerManager.vue";
 import CategoryManager from "../components/admin/CategoryManager.vue";
 import ProductsManager from "../components/admin/ProductManager.vue";
