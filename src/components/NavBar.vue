@@ -255,7 +255,7 @@ watch(itemCount, () => {
   --font-main: "Zalando Sans", sans-serif;
 }
 
-/* ================== VISIBILITY ================== */
+/* ---------- Desktop / Common ---------- */
 .pc-only {
   display: flex;
 }
@@ -263,7 +263,6 @@ watch(itemCount, () => {
   display: none;
 }
 
-/* ================== 🟪 NAVBAR ================== */
 .navbar {
   position: fixed;
   top: 0;
@@ -289,8 +288,6 @@ watch(itemCount, () => {
   background: rgba(0, 0, 0, 0.95);
   box-shadow: 0 3px 15px var(--shadow);
 }
-
-/* ✅ Logo */
 .logo {
   display: flex;
   align-items: center;
@@ -299,16 +296,12 @@ watch(itemCount, () => {
 }
 .logo img {
   width: 70px;
-  height: 85%;
 }
 .logo h3 {
   font-size: 30px;
   color: white;
   font-family: "Abril Fatface", serif;
-  font-weight: 300;
 }
-
-/* ✅ Search Box (Desktop) */
 .search-box {
   position: relative;
   width: 40%;
@@ -316,7 +309,6 @@ watch(itemCount, () => {
   background: white;
   border-radius: 50px;
   padding: 5px 15px;
-  box-sizing: border-box;
 }
 .search-box input {
   border: none;
@@ -336,8 +328,6 @@ watch(itemCount, () => {
   cursor: pointer;
   font-size: 16px;
 }
-
-/* ✅ Suggestions */
 .suggestion-list {
   position: absolute;
   top: 50px;
@@ -366,8 +356,6 @@ watch(itemCount, () => {
   border-radius: 6px;
   object-fit: cover;
 }
-
-/* ✅ Nav Items (Desktop) */
 .nav-items {
   display: flex;
   align-items: center;
@@ -381,9 +369,7 @@ watch(itemCount, () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 14px;
   cursor: pointer;
-  transition: 0.3s ease;
   position: relative;
 }
 .nav-items li img {
@@ -400,26 +386,26 @@ watch(itemCount, () => {
     hue-rotate(257deg) brightness(90%) contrast(95%);
 }
 
-/* ✅ Cart Badge */
+/* ---------- Cart Badge ---------- */
 .cart-item {
   position: relative;
 }
 .cart-badge,
 .cart-badge-mobile {
   position: absolute;
-  top: -5px;
-  right: -8px;
+  top: -6px;
+  right: -10px;
   background: red;
   color: white;
   font-size: 11px;
   border-radius: 50%;
   padding: 2px 6px;
-  z-index: 10;
+  z-index: 5;
 }
 .cart-badge-mobile {
   font-size: 10px;
-  top: -4px;
-  right: -6px;
+  top: -5px;
+  right: -8px;
 }
 .cart-badge.bounce,
 .cart-badge-mobile.bounce {
@@ -427,12 +413,12 @@ watch(itemCount, () => {
   transition: transform 0.25s ease;
 }
 
-/* ✅ Mobile Bottom Bar */
+/* ---------- Mobile Bottom Bar ---------- */
 .mobile-bottom-bar {
   display: none;
 }
 
-/* ================== 📱 RESPONSIVE ================== */
+/* ---------- Responsive ---------- */
 @media (max-width: 768px) {
   .pc-only {
     display: none;
@@ -441,15 +427,12 @@ watch(itemCount, () => {
     display: flex;
   }
 
-  .nav-inner {
-    padding: 0 5%;
-  }
-
-  /* 🔹 Fix bottom bar overlap & spacing */
+  /* Prevent content overlap */
   body {
-    padding-bottom: 70px; /* ensures product not overlap bottom bar */
+    padding-bottom: 65px !important;
   }
 
+  /* ✅ Fixed bottom bar */
   .mobile-bottom-bar {
     position: fixed;
     bottom: 0;
@@ -457,54 +440,57 @@ watch(itemCount, () => {
     width: 100%;
     background: #000;
     border-top: 1px solid rgba(142, 45, 226, 0.4);
+    display: flex;
+    justify-content: center;
     z-index: 1200;
   }
 
   .mobile-bottom-bar ul {
     display: flex;
-    justify-content: space-between; /* equal gaps */
+    justify-content: space-between;
     align-items: center;
-    width: 100%;
-    padding: 8px 18px;
     list-style: none;
+    width: 100%;
+    max-width: 420px;
+    padding: 8px 20px;
     margin: 0;
-    box-sizing: border-box;
   }
 
   .mobile-bottom-bar li {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     color: white;
     font-size: 12px;
     flex: 1;
     position: relative;
+    text-align: center;
   }
 
   .mobile-bottom-bar li img {
-    width: 23px;
-    height: 23px;
+    width: 25px;
+    height: 25px;
     filter: brightness(0) invert(1);
     margin-bottom: 3px;
   }
 
-  /* 🔹 Ensure cart badge stays correctly */
+  /* ✅ Fix cart badge alignment */
   .mobile-bottom-bar .cart-item {
     position: relative;
   }
-
-  .cart-badge-mobile {
+  .mobile-bottom-bar .cart-badge-mobile {
     position: absolute;
-    right: 10px;
-    top: -6px;
+    right: 12px;
+    top: -8px;
     background: red;
-    color: white;
+    color: #fff;
     border-radius: 50%;
-    padding: 2px 5px;
+    padding: 2px 6px;
     font-size: 10px;
   }
 
-  /* 🔹 Mobile Search Overlay */
+  /* ✅ Search overlay */
   .mobile-search {
     position: fixed;
     inset: 0;
@@ -514,23 +500,19 @@ watch(itemCount, () => {
     padding: 20px;
     overflow-y: auto;
   }
-
   .search-input {
     background: white;
     border-radius: 50px;
     padding: 10px 15px;
     display: flex;
     align-items: center;
-    position: relative;
   }
-
   .search-input input {
     border: none;
     flex: 1;
     font-size: 16px;
     outline: none;
   }
-
   .close {
     font-size: 22px;
     color: var(--purple-dark);
@@ -538,7 +520,7 @@ watch(itemCount, () => {
     cursor: pointer;
   }
 
-  /* 🔹 Suggestions inside mobile search */
+  /* ✅ Mobile suggestions */
   .mobile-suggestion-list {
     background: #fff;
     border-radius: 10px;
@@ -548,16 +530,12 @@ watch(itemCount, () => {
     max-height: 60vh;
     overflow-y: auto;
   }
-
   .mobile-suggestion-list li {
     display: flex;
     align-items: center;
     padding: 8px 10px;
     gap: 10px;
     border-bottom: 1px solid #eee;
-  }
-  .mobile-suggestion-list li:last-child {
-    border-bottom: none;
   }
   .mobile-suggestion-list img {
     width: 40px;
@@ -571,4 +549,3 @@ watch(itemCount, () => {
   }
 }
 </style>
-
