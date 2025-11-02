@@ -246,7 +246,6 @@ watch(itemCount, () => {
 </script>
 
 
-
 <style scoped>
 :root {
   --purple-dark: #4a00e0;
@@ -271,21 +270,19 @@ watch(itemCount, () => {
   left: 0;
   width: 100%;
   height: 75px;
-  background: #000000;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   transition: 0.3s ease;
-
 }
 .nav-inner {
   width: 100%;
-padding: 0 10%;
+  padding: 0 10%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* 🔹 দুই পাশে equal 10% gap */
   box-sizing: border-box;
 }
 .navbar.scrolled {
@@ -301,7 +298,8 @@ padding: 0 10%;
   cursor: pointer;
 }
 .logo img {
-  width: 70px; height: 85%;
+  width: 70px;
+  height: 85%;
 }
 .logo h3 {
   font-size: 30px;
@@ -310,7 +308,7 @@ padding: 0 10%;
   font-weight: 300;
 }
 
-/* ✅ Search Box */
+/* ✅ Search Box (Desktop) */
 .search-box {
   position: relative;
   width: 40%;
@@ -327,7 +325,8 @@ padding: 0 10%;
   font-size: 15px;
   outline: none;
   border-radius: 50px;
-font-family: "Zalando Sans", sans-serif;}
+  font-family: var(--font-main);
+}
 .search-btn {
   background: var(--accent-gradient);
   color: white;
@@ -368,13 +367,15 @@ font-family: "Zalando Sans", sans-serif;}
   object-fit: cover;
 }
 
-/* ✅ Nav Items */
+/* ✅ Nav Items (Desktop) */
 .nav-items {
   display: flex;
   align-items: center;
   gap: 30px;
   color: white;
-font-size: 14px; color: white; transition: all 0.3s ease; font-family: "Zalando Sans", sans-serif; font-weight: 500;
+  font-size: 14px;
+  font-family: var(--font-main);
+  font-weight: 500;
 }
 .nav-items li {
   display: flex;
@@ -400,26 +401,30 @@ font-size: 14px; color: white; transition: all 0.3s ease; font-family: "Zalando 
 }
 
 /* ✅ Cart Badge */
+.cart-item {
+  position: relative;
+}
 .cart-badge,
 .cart-badge-mobile {
   position: absolute;
   top: -5px;
-  right: -10px;
+  right: -8px;
   background: red;
   color: white;
   font-size: 11px;
   border-radius: 50%;
   padding: 2px 6px;
+  z-index: 10;
 }
 .cart-badge-mobile {
   font-size: 10px;
-  top: 0;
-  right: 12px;
+  top: -4px;
+  right: -6px;
 }
 .cart-badge.bounce,
 .cart-badge-mobile.bounce {
-  transform: scale(1.3);
-  transition: transform 0.3s ease;
+  transform: scale(1.2);
+  transition: transform 0.25s ease;
 }
 
 /* ✅ Mobile Bottom Bar */
@@ -440,67 +445,130 @@ font-size: 14px; color: white; transition: all 0.3s ease; font-family: "Zalando 
     padding: 0 5%;
   }
 
-  /* 🔹 Bottom Bar */
+  /* 🔹 Fix bottom bar overlap & spacing */
+  body {
+    padding-bottom: 70px; /* ensures product not overlap bottom bar */
+  }
+
   .mobile-bottom-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     background: #000;
-    display: flex;
-    justify-content: space-around;
-    padding: 8px 0;
     border-top: 1px solid rgba(142, 45, 226, 0.4);
+    z-index: 1200;
   }
+
   .mobile-bottom-bar ul {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between; /* equal gaps */
+    align-items: center;
     width: 100%;
+    padding: 8px 18px;
     list-style: none;
+    margin: 0;
+    box-sizing: border-box;
   }
+
   .mobile-bottom-bar li {
     display: flex;
     flex-direction: column;
     align-items: center;
     color: white;
     font-size: 12px;
-  }
-  .mobile-bottom-bar li img {
-    width: 22px;
-    height: 22px;
-    filter: brightness(0) invert(1);
+    flex: 1;
+    position: relative;
   }
 
-  /* 🔹 Mobile Search */
+  .mobile-bottom-bar li img {
+    width: 23px;
+    height: 23px;
+    filter: brightness(0) invert(1);
+    margin-bottom: 3px;
+  }
+
+  /* 🔹 Ensure cart badge stays correctly */
+  .mobile-bottom-bar .cart-item {
+    position: relative;
+  }
+
+  .cart-badge-mobile {
+    position: absolute;
+    right: 10px;
+    top: -6px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 10px;
+  }
+
+  /* 🔹 Mobile Search Overlay */
   .mobile-search {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
     z-index: 2000;
     padding: 20px;
-    backdrop-filter: blur(4px);
+    overflow-y: auto;
   }
+
   .search-input {
     background: white;
     border-radius: 50px;
     padding: 10px 15px;
     display: flex;
     align-items: center;
+    position: relative;
   }
+
   .search-input input {
     border: none;
     flex: 1;
     font-size: 16px;
     outline: none;
   }
+
   .close {
     font-size: 22px;
     color: var(--purple-dark);
     margin-left: 8px;
     cursor: pointer;
   }
+
+  /* 🔹 Suggestions inside mobile search */
+  .mobile-suggestion-list {
+    background: #fff;
+    border-radius: 10px;
+    margin-top: 15px;
+    padding: 10px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .mobile-suggestion-list li {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  .mobile-suggestion-list li:last-child {
+    border-bottom: none;
+  }
+  .mobile-suggestion-list img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .mobile-suggestion-list span {
+    font-size: 14px;
+    color: #333;
+  }
 }
 </style>
+
