@@ -236,17 +236,43 @@ const goAccount = () => {
 };
 
 const toggleCart = () => (cartOpen.value = !cartOpen.value);
-const toggleMobileSearch = () =>
-  (mobileSearchOpen.value = !mobileSearchOpen.value);
-const handleScroll = () => (isScrolled.value = window.scrollY > 40);
+// ✅ Mobile search toggle with suggestion handling
+const toggleMobileSearch = () => {
+  mobileSearchOpen.value = !mobileSearchOpen.value;
 
-onMounted(() => window.addEventListener("scroll", handleScroll));
-onBeforeUnmount(() => window.removeEventListener("scroll", handleScroll));
+  if (mobileSearchOpen.value) {
+    // যখন mobile search খুলবে, suggestion visible করবো
+    showSuggestions.value = true;
+    document.body.style.overflow = "hidden"; // background scroll বন্ধ
+  } else {
+    // বন্ধ করলে সব clear
+    showSuggestions.value = false;
+    suggestions.value = [];
+    document.body.style.overflow = "auto"; // scroll আবার চালু
+  }
+};
 
+// ✅ Scroll detection for navbar background
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 40;
+};
+
+// ✅ Mount / Unmount events
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleScroll);
+  document.body.style.overflow = "auto"; // fallback cleanup
+});
+
+// ✅ Cart badge bounce animation
 watch(itemCount, () => {
   animateCart.value = true;
   setTimeout(() => (animateCart.value = false), 400);
 });
+
 </script>
 
 
@@ -533,6 +559,7 @@ watch(itemCount, () => {
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
     max-height: 60vh;
     overflow-y: auto;
+    z-index: 3000;
   }
   .mobile-suggestion-list li {
     display: flex;
