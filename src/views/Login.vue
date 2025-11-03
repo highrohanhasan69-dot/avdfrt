@@ -55,27 +55,26 @@ const handleLogin = async () => {
 <style scoped>
 .login-container {
   max-width: 400px;
-  width: 90%;
-  margin-right: 5%;
-  margin-left: 5%;
-  margin-top: 80px;
-  padding: 30px 25px;
+  width: 100%;
+  margin: 100px auto; /* ✅ Center horizontally */
+  padding: 35px 25px;
   border-radius: 16px;
-  background: #fff;
+  background: #ffffff;
   box-shadow: 0 6px 20px rgba(74, 0, 224, 0.15);
   font-family: "Zalando Sans", sans-serif;
   text-align: center;
   box-sizing: border-box;
-  overflow: hidden;
 }
 
+/* 🔹 Title */
 .login-title {
   font-size: 28px;
   font-weight: 700;
-  color: #4A00E0;
+  color: #4a00e0;
   margin-bottom: 25px;
 }
 
+/* 🔹 Form Inputs */
 .login-form input {
   display: block;
   width: 100%;
@@ -90,10 +89,11 @@ const handleLogin = async () => {
 }
 
 .login-form input:focus {
-  border-color: #8E2DE2;
+  border-color: #8e2de2;
   box-shadow: 0 0 6px rgba(142, 45, 226, 0.2);
 }
 
+/* 🔹 Button */
 .login-form button {
   width: 100%;
   padding: 12px;
@@ -102,7 +102,7 @@ const handleLogin = async () => {
   color: #fff;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(90deg, #4A00E0, #8E2DE2);
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
   cursor: pointer;
   transition: all 0.25s ease;
   box-shadow: 0 4px 12px rgba(142, 45, 226, 0.25);
@@ -113,6 +113,7 @@ const handleLogin = async () => {
   box-shadow: 0 6px 14px rgba(142, 45, 226, 0.35);
 }
 
+/* 🔹 Signup Text */
 .signup-text {
   margin-top: 18px;
   font-size: 14px;
@@ -120,27 +121,49 @@ const handleLogin = async () => {
 }
 
 .signup-text a {
-  color: #8E2DE2;
+  color: #8e2de2;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .signup-text a:hover {
-  color: #4A00E0;
+  color: #4a00e0;
 }
 
+/* ✅ Full Page Center Layout */
+body,
+html {
+  height: 100%;
+  background: #f8f7ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Navbar er jonno top e rakhlam */
+}
+
+/* ✅ Wrapper for spacing after navbar */
+.login-container {
+  margin-top: 120px;
+}
+
+/* 🟣 Responsive for Mobile */
 @media (max-width: 768px) {
-  .navbar {
-    margin-bottom: 110px;
-  }
-}
-
-/* 🟣 Responsive */
-@media (max-width: 500px) {
   .login-container {
-    margin: 50px 20px;
+    width: 90%;
+    margin-top: 80px;
     padding: 25px 20px;
   }
+
+  .login-title {
+    font-size: 24px;
+  }
+
+  .login-form input,
+  .login-form button {
+    font-size: 14px;
+  }
 }
+
+
 </style>
