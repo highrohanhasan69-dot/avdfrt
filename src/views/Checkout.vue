@@ -155,7 +155,7 @@ const placeOrder = async () => {
     };
 
     // ✅ Works for both Localhost & Hosted
-    const res = await axios.post("/checkout", payload, {
+    const res = await axios.post("/api/checkout", payload, {
       withCredentials: true,
     });
 
