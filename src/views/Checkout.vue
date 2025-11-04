@@ -79,14 +79,13 @@ const API_BASE =
     ? "http://localhost:5000/api"
     : "https://avado-backend.onrender.com/api";
 
-// ✅ Important: always send credentials
-const res = await axios.post(`${API_BASE}/checkout`, payload, {
-  withCredentials: true,
-});
+// ✅ Always send cookies with requests
+axios.defaults.withCredentials = true;
 
-
+// 🛒 Use cart composable
 const { cart, fetchCart } = useCart();
 
+// 🧾 Customer info
 const customer = ref({
   name: "",
   phone: "",
@@ -135,11 +134,17 @@ const placeOrder = async () => {
       payment_method: paymentMethod.value,
     };
 
-    // ✅ Correct endpoint (no double /api)
-    const res = await axios.post("/checkout", payload, { withCredentials: true });
+    console.log("🟣 Sending checkout payload:", payload);
+
+    const res = await axios.post(`${API_BASE}/checkout`, payload, {
+      withCredentials: true,
+    });
+
+    console.log("🟢 Checkout response:", res.data);
 
     if (res.data.success) {
       alert("✅ Order placed successfully!");
+      // Reset form
       customer.value = {
         name: "",
         phone: "",
@@ -150,16 +155,19 @@ const placeOrder = async () => {
       };
       await fetchCart();
     } else {
-      alert("❌ Failed to place order!");
+      alert("❌ Checkout failed: " + (res.data.error || "Unknown error"));
     }
   } catch (err) {
-    console.error("❌ Checkout failed:", err);
-    alert("Checkout failed. Please try again!");
+    console.error("❌ Checkout failed:", err.response?.data || err.message);
+    alert("Checkout failed! " + (err.response?.data?.error || err.message));
   }
 };
 
+// ✅ Fetch cart when page loads
 onMounted(fetchCart);
 </script>
+
+
 
 <style scoped>
 .checkout-page {
