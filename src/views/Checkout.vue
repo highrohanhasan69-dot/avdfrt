@@ -79,8 +79,11 @@ const API_BASE =
     ? "http://localhost:5000/api"
     : "https://avado-backend.onrender.com/api";
 
-axios.defaults.baseURL = API_BASE;
-axios.defaults.withCredentials = true;
+// ✅ Important: always send credentials
+const res = await axios.post(`${API_BASE}/checkout`, payload, {
+  withCredentials: true,
+});
+
 
 const { cart, fetchCart } = useCart();
 
