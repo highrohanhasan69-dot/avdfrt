@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Navbar -->
     <Navbar />
 
     <div class="checkout-page">
@@ -17,7 +16,6 @@
               <div class="summary-details">
                 <p class="summary-name">{{ item.name }}</p>
 
-                <!-- ✅ Discount Price Logic -->
                 <p class="summary-price">
                   <template v-if="item.discount_percent">
                     <span class="discounted">
@@ -48,24 +46,9 @@
           <h2>Customer Details</h2>
 
           <form @submit.prevent="placeOrder">
-            <input
-              v-model="customer.name"
-              type="text"
-              placeholder="Full Name"
-              required
-            />
-            <input
-              v-model="customer.phone"
-              type="text"
-              placeholder="Phone Number"
-              required
-            />
-            <input
-              v-model="customer.address"
-              type="text"
-              placeholder="Full Address"
-              required
-            />
+            <input v-model="customer.name" type="text" placeholder="Full Name" required />
+            <input v-model="customer.phone" type="text" placeholder="Phone Number" required />
+            <input v-model="customer.address" type="text" placeholder="Full Address" required />
 
             <label>Payment Method</label>
             <select v-model="paymentMethod">
@@ -79,7 +62,6 @@
       </div>
     </div>
 
-    <!-- Footer -->
     <Footer />
   </div>
 </template>
@@ -91,7 +73,7 @@ import axios from "axios";
 import { ref, computed, onMounted } from "vue";
 import { useCart } from "@/composables/useCart";
 
-// 🟣 Auto detect backend base URL (Local + Render + Cloudflare)
+// 🟣 Auto detect backend base URL
 const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5000/api"
@@ -113,7 +95,7 @@ const customer = ref({
 
 const paymentMethod = ref("Cash on Delivery");
 
-// ✅ Discounted Price Function
+// ✅ Discount calculation
 const discountedPrice = (item) => {
   const price = Number(item.price);
   const discount = Number(item.discount_percent || 0);
@@ -121,14 +103,10 @@ const discountedPrice = (item) => {
   return price - (price * discount) / 100;
 };
 
-// ✅ Total Price (discount respected)
+// ✅ Total Price
 const totalPrice = computed(() =>
   cart.value
-    .reduce(
-      (sum, item) =>
-        sum + discountedPrice(item) * (item.quantity || 1),
-      0
-    )
+    .reduce((sum, item) => sum + discountedPrice(item) * (item.quantity || 1), 0)
     .toFixed(2)
 );
 
@@ -154,10 +132,8 @@ const placeOrder = async () => {
       payment_method: paymentMethod.value,
     };
 
-    // ✅ Works for both Localhost & Hosted
-    const res = await axios.post("/api/checkout", payload, {
-      withCredentials: true,
-    });
+    // ✅ Correct endpoint (no double /api)
+    const res = await axios.post("/checkout", payload, { withCredentials: true });
 
     if (res.data.success) {
       alert("✅ Order placed successfully!");
@@ -169,7 +145,7 @@ const placeOrder = async () => {
         upazila: "",
         thana: "",
       };
-      await fetchCart(); // clear cart after placing order
+      await fetchCart();
     } else {
       alert("❌ Failed to place order!");
     }
@@ -181,8 +157,6 @@ const placeOrder = async () => {
 
 onMounted(fetchCart);
 </script>
-
-
 
 <style scoped>
 .checkout-page {
